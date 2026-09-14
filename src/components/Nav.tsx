@@ -31,6 +31,9 @@ export default async function Nav() {
             <Link href="/fixtures" className="hover:text-white hover:underline">
               Fixtures
             </Link>
+            <Link href="/picks" className="hover:text-white hover:underline">
+              Picks
+            </Link>
             <Link href="/standings" className="hover:text-white hover:underline">
               Standings
             </Link>

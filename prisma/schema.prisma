@@ -48,6 +48,7 @@ model Fixture {
   homeTeam   Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeamId String
   awayTeam   Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  kickoff    DateTime?
   homeGoals  Int?
   awayGoals  Int?
   played     Boolean  @default(false)

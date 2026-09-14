@@ -6,12 +6,20 @@ import TeamCrest from "@/components/TeamCrest";
 
 const initialState: ActionState = {};
 
+function toLocalInputValue(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function FixtureResultForm({
   fixtureId,
   homeTeamName,
   homeTeamCrestUrl,
   awayTeamName,
   awayTeamCrestUrl,
+  kickoff,
   homeGoals,
   awayGoals,
   played,
@@ -21,6 +29,7 @@ export default function FixtureResultForm({
   homeTeamCrestUrl: string | null;
   awayTeamName: string;
   awayTeamCrestUrl: string | null;
+  kickoff: string | null;
   homeGoals: number | null;
   awayGoals: number | null;
   played: boolean;
@@ -36,6 +45,12 @@ export default function FixtureResultForm({
         {homeTeamName} vs {awayTeamName}
         <TeamCrest src={awayTeamCrestUrl} name={awayTeamName} size={18} />
       </span>
+      <input
+        name="kickoff"
+        type="datetime-local"
+        defaultValue={toLocalInputValue(kickoff)}
+        className="rounded-md border border-zinc-300 px-2 py-1 text-xs"
+      />
       <input
         name="homeGoals"
         type="number"

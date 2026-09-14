@@ -61,6 +61,7 @@ export async function addFixtureAction(
   await requireAdmin();
   const homeTeamId = String(formData.get("homeTeamId") ?? "");
   const awayTeamId = String(formData.get("awayTeamId") ?? "");
+  const kickoffRaw = String(formData.get("kickoff") ?? "");
   if (!homeTeamId || !awayTeamId || homeTeamId === awayTeamId) {
     return fail("Pick two different teams.");
   }
@@ -68,8 +69,10 @@ export async function addFixtureAction(
   const existing = await prisma.fixture.findFirst({ where: { gameweekId, homeTeamId, awayTeamId } });
   if (existing) return fail("That fixture already exists for this gameweek.");
 
-  await prisma.fixture.create({ data: { gameweekId, homeTeamId, awayTeamId } });
+  const kickoff = kickoffRaw ? new Date(kickoffRaw) : null;
+  await prisma.fixture.create({ data: { gameweekId, homeTeamId, awayTeamId, kickoff } });
   revalidatePath(`/admin/gameweeks/${gameweekId}`);
+  revalidatePath("/fixtures");
   return ok("Fixture added.");
 }
 
@@ -151,10 +154,12 @@ export async function updateFixtureResultAction(
   await requireAdmin();
   const homeGoalsRaw = String(formData.get("homeGoals") ?? "");
   const awayGoalsRaw = String(formData.get("awayGoals") ?? "");
+  const kickoffRaw = String(formData.get("kickoff") ?? "");
   const played = formData.get("played") === "on";
 
   const homeGoals = homeGoalsRaw === "" ? null : Number(homeGoalsRaw);
   const awayGoals = awayGoalsRaw === "" ? null : Number(awayGoalsRaw);
+  const kickoff = kickoffRaw ? new Date(kickoffRaw) : null;
 
   if (played && (homeGoals === null || awayGoals === null || homeGoals < 0 || awayGoals < 0)) {
     return fail("Enter both scores before marking the fixture as played.");
@@ -162,10 +167,11 @@ export async function updateFixtureResultAction(
 
   const fixture = await prisma.fixture.update({
     where: { id: fixtureId },
-    data: { homeGoals, awayGoals, played },
+    data: { homeGoals, awayGoals, played, kickoff },
   });
 
   revalidatePath(`/admin/gameweeks/${fixture.gameweekId}`);
+  revalidatePath("/fixtures");
   revalidatePath("/standings");
   revalidatePath("/");
   return ok("Result saved.");

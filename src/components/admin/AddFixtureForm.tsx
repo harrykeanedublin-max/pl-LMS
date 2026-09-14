@@ -39,6 +39,14 @@ export default function AddFixtureForm({
           ))}
         </select>
       </label>
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-zinc-700">Kickoff (optional)</span>
+        <input
+          name="kickoff"
+          type="datetime-local"
+          className="rounded-md border border-zinc-300 px-3 py-2"
+        />
+      </label>
       <button
         type="submit"
         disabled={pending}

@@ -51,6 +51,7 @@ export default async function ManageGameweekPage({
               homeTeamCrestUrl={f.homeTeam.crestUrl}
               awayTeamName={f.awayTeam.name}
               awayTeamCrestUrl={f.awayTeam.crestUrl}
+              kickoff={f.kickoff ? f.kickoff.toISOString() : null}
               homeGoals={f.homeGoals}
               awayGoals={f.awayGoals}
               played={f.played}

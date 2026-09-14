@@ -78,9 +78,11 @@ export async function addFixtureAction(
 }
 
 /**
- * Parses lines like "Arsenal vs Chelsea" (team names matched case-insensitively
- * against full name or short code) and creates any fixtures that don't already
- * exist. Reports lines it couldn't match rather than failing the whole batch.
+ * Parses lines like "Arsenal vs Chelsea" or "Arsenal vs Chelsea, 20/09/2026 15:00"
+ * (team names matched case-insensitively against full name or short code; the date
+ * is optional and always Ireland/UK time). Creates fixtures that don't exist yet;
+ * for ones that already exist, updates the kickoff if a new one was given. Reports
+ * lines it couldn't match rather than failing the whole batch.
  */
 export async function addFixturesBulkAction(
   gameweekId: string,
@@ -101,14 +103,15 @@ export async function addFixturesBulkAction(
   for (const t of teams) byKey.set(t.shortName.toLowerCase(), t);
 
   const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId } });
-  const existingKey = (homeId: string, awayId: string) => `${homeId}:${awayId}`;
-  const existingSet = new Set(existingFixtures.map((f) => existingKey(f.homeTeamId, f.awayTeamId)));
+  const existingByKey = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
 
-  const toCreate: { homeTeamId: string; awayTeamId: string }[] = [];
+  let created = 0;
+  let updated = 0;
   const problems: string[] = [];
 
   for (const line of lines) {
-    const match = line.match(/^(.+?)\s+vs?\.?\s+(.+)$/i);
+    const [fixturePart, dateTimePart] = line.split(",").map((s) => s.trim());
+    const match = fixturePart.match(/^(.+?)\s+vs?\.?\s+(.+)$/i);
     if (!match) {
       problems.push(`"${line}" — couldn't parse (expected "Home vs Away")`);
       continue;
@@ -126,25 +129,51 @@ export async function addFixturesBulkAction(
       problems.push(`"${line}" — same team twice`);
       continue;
     }
-    const key = existingKey(home.id, away.id);
-    if (existingSet.has(key)) continue; // already added, skip quietly
-    existingSet.add(key);
-    toCreate.push({ homeTeamId: home.id, awayTeamId: away.id });
-  }
 
-  if (toCreate.length > 0) {
-    await prisma.fixture.createMany({
-      data: toCreate.map((f) => ({ gameweekId, ...f })),
+    let kickoff: Date | undefined;
+    if (dateTimePart) {
+      const dtMatch = dateTimePart.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/);
+      if (!dtMatch) {
+        problems.push(`"${line}" — couldn't parse date/time (expected DD/MM/YYYY HH:mm)`);
+        continue;
+      }
+      const [, d, mo, y, h, mi] = dtMatch;
+      const parsed = irishLocalToUtc(
+        `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}T${h.padStart(2, "0")}:${mi}`
+      );
+      if (!parsed) {
+        problems.push(`"${line}" — invalid date/time`);
+        continue;
+      }
+      kickoff = parsed;
+    }
+
+    const key = `${home.id}:${away.id}`;
+    const existing = existingByKey.get(key);
+    if (existing) {
+      if (kickoff) {
+        await prisma.fixture.update({ where: { id: existing.id }, data: { kickoff } });
+        updated += 1;
+      }
+      continue;
+    }
+    const createdFixture = await prisma.fixture.create({
+      data: { gameweekId, homeTeamId: home.id, awayTeamId: away.id, kickoff: kickoff ?? null },
     });
-    revalidatePath(`/admin/gameweeks/${gameweekId}`);
+    existingByKey.set(key, createdFixture); // guards against a repeated line later in the same paste
+    created += 1;
   }
 
-  if (problems.length > 0) {
-    return {
-      error: `Added ${toCreate.length} fixture(s). Couldn't add: ${problems.join("; ")}`,
-    };
+  if (created > 0 || updated > 0) {
+    revalidatePath(`/admin/gameweeks/${gameweekId}`);
+    revalidatePath("/fixtures");
   }
-  return ok(`Added ${toCreate.length} fixture(s).`);
+
+  const summary = `Added ${created} fixture(s), updated kickoff on ${updated}.`;
+  if (problems.length > 0) {
+    return { error: `${summary} Couldn't add: ${problems.join("; ")}` };
+  }
+  return ok(summary);
 }
 
 export async function updateFixtureResultAction(

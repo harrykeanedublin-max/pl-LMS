@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, hashPasscode } from "@/lib/auth";
 import { fetchCrestUrl } from "@/lib/crests";
 
 export interface ActionState {
@@ -188,6 +188,21 @@ export async function setPlayerAdminAction(playerId: string, isAdmin: boolean): 
   await requireAdmin();
   await prisma.player.update({ where: { id: playerId }, data: { isAdmin } });
   revalidatePath("/admin/players");
+}
+
+export async function resetPlayerPasscodeAction(
+  playerId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const passcode = String(formData.get("passcode") ?? "");
+  if (passcode.length < 4) return fail("Passcode must be at least 4 characters.");
+
+  const passcodeHash = await hashPasscode(passcode);
+  await prisma.player.update({ where: { id: playerId }, data: { passcodeHash } });
+  revalidatePath("/admin/players");
+  return ok("Passcode reset. Tell them their new passcode.");
 }
 
 export async function addTeamAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

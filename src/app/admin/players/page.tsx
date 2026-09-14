@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { setPlayerPaidAction, setPlayerAdminAction } from "../actions";
+import ResetPasscodeForm from "@/components/admin/ResetPasscodeForm";
 
 export default async function AdminPlayersPage() {
   const me = await requireAdmin();
@@ -15,6 +16,7 @@ export default async function AdminPlayersPage() {
             <th className="py-2 pr-4">Name</th>
             <th className="py-2 pr-4">Paid</th>
             <th className="py-2 pr-4">Admin</th>
+            <th className="py-2 pr-4"></th>
           </tr>
         </thead>
         <tbody>
@@ -44,6 +46,9 @@ export default async function AdminPlayersPage() {
                       {p.isAdmin ? "Admin ✓" : "Make admin"}
                     </button>
                   </form>
+                </td>
+                <td className="py-2 pr-4">
+                  <ResetPasscodeForm playerId={p.id} />
                 </td>
               </tr>
             );

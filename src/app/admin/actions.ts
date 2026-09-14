@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin, hashPasscode } from "@/lib/auth";
 import { fetchCrestUrl } from "@/lib/crests";
+import { irishLocalToUtc } from "@/lib/time";
 
 export interface ActionState {
   error?: string;
@@ -18,8 +19,8 @@ export async function createGameweekAction(_prev: ActionState, formData: FormDat
   const number = Number(formData.get("number"));
   const deadlineRaw = String(formData.get("deadline") ?? "");
   if (!number || number < 1) return fail("Enter a valid gameweek number.");
-  const deadline = new Date(deadlineRaw);
-  if (Number.isNaN(deadline.getTime())) return fail("Enter a valid deadline.");
+  const deadline = irishLocalToUtc(deadlineRaw);
+  if (!deadline) return fail("Enter a valid deadline.");
 
   const existing = await prisma.gameweek.findUnique({ where: { number } });
   if (existing) return fail(`Gameweek ${number} already exists.`);
@@ -45,8 +46,8 @@ export async function updateGameweekDeadlineAction(
 ): Promise<ActionState> {
   await requireAdmin();
   const deadlineRaw = String(formData.get("deadline") ?? "");
-  const deadline = new Date(deadlineRaw);
-  if (Number.isNaN(deadline.getTime())) return fail("Enter a valid deadline.");
+  const deadline = irishLocalToUtc(deadlineRaw);
+  if (!deadline) return fail("Enter a valid deadline.");
   await prisma.gameweek.update({ where: { id: gameweekId }, data: { deadline } });
   revalidatePath("/admin");
   revalidatePath("/");

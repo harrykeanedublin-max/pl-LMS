@@ -28,6 +28,7 @@ export default function CreateGameweekForm() {
           required
           className="rounded-md border border-zinc-300 px-3 py-2"
         />
+        <span className="text-xs text-zinc-500">Always Ireland/UK time, whatever timezone you're in.</span>
       </label>
       <button
         type="submit"

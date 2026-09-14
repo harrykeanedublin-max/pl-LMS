@@ -32,6 +32,7 @@ export default async function AdminPage() {
 
       <section>
         <h2 className="text-lg font-semibold mb-3">Gameweeks</h2>
+        <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse mb-4">
           <thead>
             <tr className="text-left text-zinc-500 border-b border-zinc-200">
@@ -75,6 +76,7 @@ export default async function AdminPage() {
             )}
           </tbody>
         </table>
+        </div>
         <CreateGameweekForm />
       </section>
     </div>

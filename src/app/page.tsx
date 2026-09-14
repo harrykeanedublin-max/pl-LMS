@@ -106,6 +106,7 @@ export default async function DashboardPage() {
         {myPicks.length === 0 ? (
           <p className="text-zinc-500 text-sm">No picks yet.</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="text-left text-zinc-500 border-b border-zinc-200">
@@ -142,6 +143,7 @@ export default async function DashboardPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

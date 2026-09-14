@@ -10,6 +10,7 @@ export default async function AdminPlayersPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">Players</h1>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="text-left text-zinc-500 border-b border-zinc-200">
@@ -55,6 +56,7 @@ export default async function AdminPlayersPage() {
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

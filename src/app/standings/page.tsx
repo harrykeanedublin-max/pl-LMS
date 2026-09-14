@@ -57,6 +57,7 @@ export default async function StandingsPage() {
         </p>
       </div>
 
+      <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="text-left text-zinc-500 border-b border-zinc-200">
@@ -91,6 +92,7 @@ export default async function StandingsPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -33,8 +33,8 @@ export default async function FixturesPage() {
           ) : (
             <ul className="flex flex-col divide-y divide-zinc-100 border-y border-zinc-100">
               {gw.fixtures.map((f) => (
-                <li key={f.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <span className="flex items-center gap-2">
+                <li key={f.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 py-2 text-sm">
+                  <span className="flex items-center gap-2 flex-wrap">
                     <TeamCrest src={f.homeTeam.crestUrl} name={f.homeTeam.name} />
                     <span>{f.homeTeam.name}</span>
                     <span className="text-zinc-400">vs</span>

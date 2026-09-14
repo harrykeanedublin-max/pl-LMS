@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { addFixtureAction, type ActionState } from "@/app/admin/actions";
 
 const initialState: ActionState = {};
@@ -14,6 +14,13 @@ export default function AddFixtureForm({
 }) {
   const boundAction = addFixtureAction.bind(null, gameweekId);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
+  const [kickoffLocal, setKickoffLocal] = useState("");
+
+  // The datetime-local input has no timezone of its own - it's a plain "wall clock"
+  // reading in whoever's browser is filling the form. Converting it to a Date here
+  // (in the browser) correctly anchors it to the admin's own local timezone; sending
+  // that as an ISO string means the server never has to guess.
+  const kickoffIso = kickoffLocal ? new Date(kickoffLocal).toISOString() : "";
 
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-md border border-zinc-200 p-4">
@@ -42,10 +49,12 @@ export default function AddFixtureForm({
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-zinc-700">Kickoff (optional)</span>
         <input
-          name="kickoff"
           type="datetime-local"
+          value={kickoffLocal}
+          onChange={(e) => setKickoffLocal(e.target.value)}
           className="rounded-md border border-zinc-300 px-3 py-2"
         />
+        <input type="hidden" name="kickoff" value={kickoffIso} />
       </label>
       <button
         type="submit"

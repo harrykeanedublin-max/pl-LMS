@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateFixtureResultAction, deleteFixtureAction, type ActionState } from "@/app/admin/actions";
 import TeamCrest from "@/components/TeamCrest";
 
@@ -37,6 +37,13 @@ export default function FixtureResultForm({
   const boundAction = updateFixtureResultAction.bind(null, fixtureId);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
   const deleteAction = deleteFixtureAction.bind(null, fixtureId);
+  const [kickoffLocal, setKickoffLocal] = useState(() => toLocalInputValue(kickoff));
+
+  // The datetime-local input has no timezone of its own - it's a plain "wall clock"
+  // reading in whoever's browser is filling the form. Converting it to a Date here
+  // (in the browser) correctly anchors it to the admin's own local timezone; sending
+  // that as an ISO string means the server never has to guess.
+  const kickoffIso = kickoffLocal ? new Date(kickoffLocal).toISOString() : "";
 
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-3 border-b border-zinc-100 py-2 text-sm">
@@ -46,11 +53,12 @@ export default function FixtureResultForm({
         <TeamCrest src={awayTeamCrestUrl} name={awayTeamName} size={18} />
       </span>
       <input
-        name="kickoff"
         type="datetime-local"
-        defaultValue={toLocalInputValue(kickoff)}
+        value={kickoffLocal}
+        onChange={(e) => setKickoffLocal(e.target.value)}
         className="rounded-md border border-zinc-300 px-2 py-1 text-xs"
       />
+      <input type="hidden" name="kickoff" value={kickoffIso} />
       <input
         name="homeGoals"
         type="number"

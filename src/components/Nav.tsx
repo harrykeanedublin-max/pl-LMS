@@ -36,7 +36,7 @@ export default async function Nav() {
     >
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="font-semibold tracking-tight text-white">
-          ⚽ PL Pick&apos;em
+          ⚽ Not LMS 2, Electric Boogaloo
         </Link>
 
         {/* Desktop nav */}

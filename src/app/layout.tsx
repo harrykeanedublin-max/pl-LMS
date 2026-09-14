@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PL Pick'em",
+  title: "Not LMS 2, Electric Boogaloo",
   description: "Premier League weekly team pick'em pool",
 };
 

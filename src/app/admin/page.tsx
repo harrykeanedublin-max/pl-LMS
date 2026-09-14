@@ -17,13 +17,13 @@ export default async function AdminPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin</h1>
         <nav className="flex gap-4 text-sm">
-          <Link href="/admin/players" className="hover:underline">
+          <Link href="/admin/players" className="text-emerald-700 hover:underline">
             Players
           </Link>
-          <Link href="/admin/teams" className="hover:underline">
+          <Link href="/admin/teams" className="text-emerald-700 hover:underline">
             Teams
           </Link>
-          <Link href="/admin/config" className="hover:underline">
+          <Link href="/admin/config" className="text-emerald-700 hover:underline">
             Pool settings
           </Link>
         </nav>
@@ -53,7 +53,7 @@ export default async function AdminPage() {
                   <td className="py-2 pr-4">{gw._count.picks}</td>
                   <td className="py-2 pr-4">{gw.isLocked ? "Locked" : "Open"}</td>
                   <td className="py-2 pr-4 flex gap-3">
-                    <Link href={`/admin/gameweeks/${gw.id}`} className="text-zinc-900 hover:underline">
+                    <Link href={`/admin/gameweeks/${gw.id}`} className="text-emerald-700 hover:underline">
                       Manage
                     </Link>
                     <form action={toggleLock}>

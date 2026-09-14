@@ -2,6 +2,7 @@ import { ChipType } from "@prisma/client";
 import { requirePlayer } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import PickForm, { type ChipStatus } from "@/components/PickForm";
+import TeamCrest from "@/components/TeamCrest";
 import { pointsForPick, resultForTeam } from "@/lib/scoring";
 
 export default async function DashboardPage() {
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
   );
   const availableTeams = allTeams
     .filter((t) => !usedTeamIdsElsewhere.has(t.id))
-    .map((t) => ({ id: t.id, name: t.name }));
+    .map((t) => ({ id: t.id, name: t.name, crestUrl: t.crestUrl }));
 
   const picksThisWeek = currentGameweek
     ? myPicks.filter((p) => p.gameweekId === currentGameweek.id)
@@ -122,7 +123,12 @@ export default async function DashboardPage() {
                 return (
                   <tr key={pick.id} className="border-b border-zinc-100">
                     <td className="py-2 pr-4">{pick.gameweek.number}</td>
-                    <td className="py-2 pr-4">{pick.team.name}</td>
+                    <td className="py-2 pr-4">
+                      <span className="flex items-center gap-2">
+                        <TeamCrest src={pick.team.crestUrl} name={pick.team.name} />
+                        {pick.team.name}
+                      </span>
+                    </td>
                     <td className="py-2 pr-4">
                       {result ? result.outcome + ` (${result.goalsFor}-${result.goalsAgainst})` : "Pending"}
                     </td>

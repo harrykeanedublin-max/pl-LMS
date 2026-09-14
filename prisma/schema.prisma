@@ -24,6 +24,7 @@ model Team {
   id           String    @id @default(cuid())
   name         String    @unique
   shortName    String    @unique
+  crestUrl     String?
   picks        Pick[]
   homeFixtures Fixture[] @relation("HomeTeam")
   awayFixtures Fixture[] @relation("AwayTeam")

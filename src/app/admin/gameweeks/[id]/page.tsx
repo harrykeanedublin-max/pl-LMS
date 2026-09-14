@@ -48,7 +48,9 @@ export default async function ManageGameweekPage({
               key={f.id}
               fixtureId={f.id}
               homeTeamName={f.homeTeam.name}
+              homeTeamCrestUrl={f.homeTeam.crestUrl}
               awayTeamName={f.awayTeam.name}
+              awayTeamCrestUrl={f.awayTeam.crestUrl}
               homeGoals={f.homeGoals}
               awayGoals={f.awayGoals}
               played={f.played}

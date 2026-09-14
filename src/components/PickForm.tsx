@@ -2,10 +2,12 @@
 
 import { useActionState, useState } from "react";
 import { submitPicksAction, type PickFormState } from "@/app/actions/picks";
+import TeamCrest from "@/components/TeamCrest";
 
 export interface TeamOption {
   id: string;
   name: string;
+  crestUrl: string | null;
 }
 
 export interface ChipStatus {
@@ -35,56 +37,69 @@ export default function PickForm({
   const boundAction = submitPicksAction.bind(null, gameweekId);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
   const [doubleUpChecked, setDoubleUpChecked] = useState(doubleUp.activeThisWeek);
+  const [team1Id, setTeam1Id] = useState(currentTeam1Id ?? "");
+  const [team2Id, setTeam2Id] = useState(currentTeam2Id ?? "");
 
   // Teams still selectable for team2 must exclude whatever is chosen for team1, and vice versa.
   const teamOptions = (excludeId?: string) =>
     availableTeams.filter((t) => t.id !== excludeId);
+
+  const team1 = availableTeams.find((t) => t.id === team1Id);
+  const team2 = availableTeams.find((t) => t.id === team2Id);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-zinc-700">{doubleUpChecked ? "Team 1" : "Your pick"}</span>
-          <select
-            name="team1"
-            defaultValue={currentTeam1Id ?? ""}
-            required
-            className="rounded-md border border-zinc-300 px-3 py-2 text-base"
-          >
-            <option value="" disabled>
-              Choose a team…
-            </option>
-            {teamOptions(currentTeam2Id).map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {doubleUpChecked && (
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-zinc-700">Team 2</span>
+          <div className="flex items-center gap-2">
+            <TeamCrest src={team1?.crestUrl} name={team1?.name ?? "?"} size={28} />
             <select
-              name="team2"
-              defaultValue={currentTeam2Id ?? ""}
+              name="team1"
+              value={team1Id}
+              onChange={(e) => setTeam1Id(e.target.value)}
               required
-              className="rounded-md border border-zinc-300 px-3 py-2 text-base"
+              className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-base"
             >
               <option value="" disabled>
                 Choose a team…
               </option>
-              {teamOptions(currentTeam1Id).map((t) => (
+              {teamOptions(team2Id).map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
             </select>
+          </div>
+        </label>
+
+        {doubleUpChecked && (
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-zinc-700">Team 2</span>
+            <div className="flex items-center gap-2">
+              <TeamCrest src={team2?.crestUrl} name={team2?.name ?? "?"} size={28} />
+              <select
+                name="team2"
+                value={team2Id}
+                onChange={(e) => setTeam2Id(e.target.value)}
+                required
+                className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-base"
+              >
+                <option value="" disabled>
+                  Choose a team…
+                </option>
+                {teamOptions(team1Id).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </label>
         )}
       </div>
 
-      <fieldset className="flex flex-col gap-3 rounded-md border border-zinc-200 p-4">
+      <fieldset className="flex flex-col gap-3 rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
         <legend className="px-1 text-sm font-medium text-zinc-700">Chips (one-time use)</legend>
         <ChipCheckbox
           name="chip_double_up"
@@ -110,7 +125,7 @@ export default function PickForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-700 disabled:opacity-50"
+        className="self-start rounded-md bg-emerald-800 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save pick"}
       </button>
@@ -138,7 +153,7 @@ function ChipCheckbox({
         defaultChecked={status.activeThisWeek}
         disabled={disabled}
         onChange={(e) => onToggle?.(e.target.checked)}
-        className="mt-0.5"
+        className="mt-0.5 accent-emerald-700"
       />
       <span>
         {label}

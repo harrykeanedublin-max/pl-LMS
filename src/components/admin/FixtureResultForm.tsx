@@ -2,20 +2,25 @@
 
 import { useActionState } from "react";
 import { updateFixtureResultAction, deleteFixtureAction, type ActionState } from "@/app/admin/actions";
+import TeamCrest from "@/components/TeamCrest";
 
 const initialState: ActionState = {};
 
 export default function FixtureResultForm({
   fixtureId,
   homeTeamName,
+  homeTeamCrestUrl,
   awayTeamName,
+  awayTeamCrestUrl,
   homeGoals,
   awayGoals,
   played,
 }: {
   fixtureId: string;
   homeTeamName: string;
+  homeTeamCrestUrl: string | null;
   awayTeamName: string;
+  awayTeamCrestUrl: string | null;
   homeGoals: number | null;
   awayGoals: number | null;
   played: boolean;
@@ -26,8 +31,10 @@ export default function FixtureResultForm({
 
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-3 border-b border-zinc-100 py-2 text-sm">
-      <span className="w-56">
+      <span className="w-56 flex items-center gap-1.5">
+        <TeamCrest src={homeTeamCrestUrl} name={homeTeamName} size={18} />
         {homeTeamName} vs {awayTeamName}
+        <TeamCrest src={awayTeamCrestUrl} name={awayTeamName} size={18} />
       </span>
       <input
         name="homeGoals"
@@ -53,7 +60,7 @@ export default function FixtureResultForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-zinc-900 text-white px-3 py-1 hover:bg-zinc-700 disabled:opacity-50"
+        className="rounded-md bg-emerald-800 text-white px-3 py-1 hover:bg-emerald-700 disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save"}
       </button>

@@ -12,41 +12,47 @@ export default async function Nav() {
     : false;
 
   return (
-    <header className="border-b border-zinc-200 bg-white">
+    <header
+      className="border-b-4 border-emerald-950 bg-emerald-900 text-emerald-50"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 40px, transparent 40px, transparent 80px)",
+      }}
+    >
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold tracking-tight">
+        <Link href="/" className="font-semibold tracking-tight text-white">
           ⚽ PL Pick&apos;em
         </Link>
         {signedIn ? (
           <nav className="flex items-center gap-5 text-sm">
-            <Link href="/" className="hover:underline">
+            <Link href="/" className="hover:text-white hover:underline">
               This Week
             </Link>
-            <Link href="/standings" className="hover:underline">
+            <Link href="/standings" className="hover:text-white hover:underline">
               Standings
             </Link>
-            <Link href="/rules" className="hover:underline">
+            <Link href="/rules" className="hover:text-white hover:underline">
               Rules
             </Link>
             {session.isAdmin && (
-              <Link href="/admin" className="hover:underline text-emerald-700">
+              <Link href="/admin" className="hover:underline text-amber-300 font-medium">
                 Admin
               </Link>
             )}
-            <span className="text-zinc-400">|</span>
-            <span className="text-zinc-600">{session.playerName}</span>
+            <span className="text-emerald-700">|</span>
+            <span className="text-emerald-100">{session.playerName}</span>
             <form action={logoutAction}>
-              <button type="submit" className="text-zinc-500 hover:text-zinc-900 hover:underline">
+              <button type="submit" className="text-emerald-200 hover:text-white hover:underline">
                 Sign out
               </button>
             </form>
           </nav>
         ) : (
           <nav className="flex items-center gap-5 text-sm">
-            <Link href="/rules" className="hover:underline">
+            <Link href="/rules" className="hover:text-white hover:underline">
               Rules
             </Link>
-            <Link href="/login" className="hover:underline">
+            <Link href="/login" className="hover:text-white hover:underline">
               Sign in
             </Link>
           </nav>

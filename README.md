@@ -53,6 +53,11 @@ This app uses Postgres via Prisma. A free option that works well with Vercel:
 - The seeded team list ([prisma/seed.ts](prisma/seed.ts)) reflects one Premier League
   season's clubs — promotion/relegation will make it stale eventually. Fix it any
   time from `/admin/teams` without touching code.
+- Team crests are looked up automatically from Wikipedia's public API
+  ([src/lib/crests.ts](src/lib/crests.ts)) whenever a team is added, and can be
+  retried per-team from `/admin/teams` ("Refresh crest") if one is missing or wrong.
+  Crests are third-party club trademarks, used here only for identification in a
+  private, non-commercial pool among friends.
 - Picks and chip choices can be changed freely up until a gameweek's deadline. The
   admin locks or sets the deadline for each gameweek.
 - The app tracks who has paid their entry as a simple flag (`/admin/players`) — it

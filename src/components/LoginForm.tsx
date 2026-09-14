@@ -22,7 +22,7 @@ export default function LoginForm() {
         <button
           onClick={() => setMode("login")}
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === "login" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500"
+            mode === "login" ? "border-emerald-800 text-emerald-800" : "border-transparent text-zinc-500"
           }`}
         >
           Sign in
@@ -30,7 +30,7 @@ export default function LoginForm() {
         <button
           onClick={() => setMode("register")}
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === "register" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500"
+            mode === "register" ? "border-emerald-800 text-emerald-800" : "border-transparent text-zinc-500"
           }`}
         >
           New player
@@ -45,7 +45,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={loginPending}
-            className="rounded-md bg-zinc-900 text-white py-2 text-sm font-medium hover:bg-zinc-700 disabled:opacity-50"
+            className="rounded-md bg-emerald-800 text-white py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
             {loginPending ? "Signing in…" : "Sign in"}
           </button>
@@ -71,7 +71,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={registerPending}
-            className="rounded-md bg-zinc-900 text-white py-2 text-sm font-medium hover:bg-zinc-700 disabled:opacity-50"
+            className="rounded-md bg-emerald-800 text-white py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
             {registerPending ? "Creating…" : "Create player"}
           </button>
@@ -102,7 +102,7 @@ function Field({
         type={type}
         autoComplete={autoComplete}
         required={name !== "adminCode"}
-        className="rounded-md border border-zinc-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-zinc-400"
+        className="rounded-md border border-zinc-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-600"
       />
       {hint && <span className="text-xs text-zinc-500">{hint}</span>}
     </label>

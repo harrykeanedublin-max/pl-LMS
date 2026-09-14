@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
+import { fetchCrestUrl } from "@/lib/crests";
 
 export interface ActionState {
   error?: string;
@@ -198,9 +199,10 @@ export async function addTeamAction(_prev: ActionState, formData: FormData): Pro
   const existing = await prisma.team.findFirst({ where: { OR: [{ name }, { shortName }] } });
   if (existing) return fail("A team with that name or short code already exists.");
 
-  await prisma.team.create({ data: { name, shortName } });
+  const crestUrl = await fetchCrestUrl(name);
+  await prisma.team.create({ data: { name, shortName, crestUrl } });
   revalidatePath("/admin/teams");
-  return ok("Team added.");
+  return ok(crestUrl ? "Team added." : "Team added (couldn't find a crest automatically).");
 }
 
 export async function deleteTeamAction(
@@ -219,6 +221,23 @@ export async function deleteTeamAction(
   await prisma.team.delete({ where: { id: teamId } });
   revalidatePath("/admin/teams");
   return ok("Team removed.");
+}
+
+export async function refreshTeamCrestAction(
+  teamId: string,
+  _prev: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) return fail("Team not found.");
+
+  const crestUrl = await fetchCrestUrl(team.name);
+  if (!crestUrl) return fail("Couldn't find a crest for that name.");
+
+  await prisma.team.update({ where: { id: teamId }, data: { crestUrl } });
+  revalidatePath("/admin/teams");
+  return ok("Crest updated.");
 }
 
 export async function updateConfigAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

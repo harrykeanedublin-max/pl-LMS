@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     prisma.pick.findMany({
       where: { playerId: player.id },
       include: { team: true, gameweek: true },
-      orderBy: { gameweek: { number: "asc" } },
+      orderBy: [{ gameweek: { number: "asc" } }, { createdAt: "asc" }],
     }),
     prisma.chipUsage.findMany({
       where: { playerId: player.id },
@@ -81,6 +81,7 @@ export default async function DashboardPage() {
               Deadline: {currentGameweek.deadline.toLocaleString()}
             </p>
             <PickForm
+              key={picksThisWeek.map((p) => p.teamId).join(",")}
               gameweekId={currentGameweek.id}
               availableTeams={availableTeams}
               currentTeam1Id={picksThisWeek[0]?.teamId}

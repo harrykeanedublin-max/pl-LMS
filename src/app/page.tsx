@@ -3,7 +3,7 @@ import { requirePlayer } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import PickForm, { type ChipStatus } from "@/components/PickForm";
 import TeamCrest from "@/components/TeamCrest";
-import { pointsForPick, resultForTeam } from "@/lib/scoring";
+import { CHIP_LABEL, pointsForPick, resultForTeam } from "@/lib/scoring";
 import { formatIrishDateTime } from "@/lib/time";
 
 export default async function DashboardPage() {
@@ -111,6 +111,7 @@ export default async function DashboardPage() {
               <tr className="text-left text-zinc-500 border-b border-zinc-200">
                 <th className="py-2 pr-4">GW</th>
                 <th className="py-2 pr-4">Team</th>
+                <th className="py-2 pr-4">Chip</th>
                 <th className="py-2 pr-4">Result</th>
                 <th className="py-2 pr-4">Points</th>
               </tr>
@@ -121,6 +122,7 @@ export default async function DashboardPage() {
                 const result = fixture ? resultForTeam(fixture, pick.teamId) : null;
                 const activeChips = chipsByGw.get(pick.gameweekId) ?? new Set<ChipType>();
                 const points = pointsForPick(result, activeChips);
+                const chip = [...activeChips][0];
                 return (
                   <tr key={pick.id} className="border-b border-zinc-100">
                     <td className="py-2 pr-4">{pick.gameweek.number}</td>
@@ -130,6 +132,7 @@ export default async function DashboardPage() {
                         {pick.team.name}
                       </span>
                     </td>
+                    <td className="py-2 pr-4 text-zinc-600">{chip ? CHIP_LABEL[chip] : ""}</td>
                     <td className="py-2 pr-4">
                       {result ? result.outcome + ` (${result.goalsFor}-${result.goalsAgainst})` : "Pending"}
                     </td>

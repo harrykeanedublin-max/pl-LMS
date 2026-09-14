@@ -1,5 +1,11 @@
 import { ChipType, type Fixture, type Pick, type Team } from "@prisma/client";
 
+export const CHIP_LABEL: Record<ChipType, string> = {
+  [ChipType.DOUBLE_UP]: "2x Double up",
+  [ChipType.GAMBLE]: "🎲 Gamble",
+  [ChipType.CLEAN_SHEET]: "🧤 Clean sheet",
+};
+
 export type MatchOutcome = "WIN" | "DRAW" | "LOSS";
 
 export interface TeamFixtureResult {

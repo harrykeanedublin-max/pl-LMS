@@ -1,15 +1,9 @@
 import { ChipType } from "@prisma/client";
 import { requirePlayer } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { pointsForPick, resultForTeam } from "@/lib/scoring";
+import { CHIP_LABEL, pointsForPick, resultForTeam } from "@/lib/scoring";
 import { formatIrishDateTime } from "@/lib/time";
 import TeamCrest from "@/components/TeamCrest";
-
-const CHIP_LABEL: Record<ChipType, string> = {
-  [ChipType.DOUBLE_UP]: "2x Double up",
-  [ChipType.GAMBLE]: "🎲 Gamble",
-  [ChipType.CLEAN_SHEET]: "🧤 Clean sheet",
-};
 
 export default async function PicksPage() {
   await requirePlayer();

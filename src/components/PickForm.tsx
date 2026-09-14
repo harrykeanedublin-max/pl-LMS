@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { ChipType } from "@prisma/client";
 import { submitPicksAction, type PickFormState } from "@/app/actions/picks";
 import TeamCrest from "@/components/TeamCrest";
@@ -110,32 +111,37 @@ export default function PickForm({
         )}
       </div>
 
-      <fieldset className="flex flex-col gap-3 rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
+      <fieldset className="flex flex-col gap-2 rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
         <legend className="px-1 text-sm font-medium text-zinc-700">
-          Chip (one-time use — at most one per gameweek)
+          Chip — one per gameweek,{" "}
+          <Link href="/rules" className="text-emerald-700 hover:underline font-normal">
+            what do they do?
+          </Link>
         </legend>
-        <ChipRadio value="" label="No chip this week" chip={chip} onSelect={setChip} />
-        <ChipRadio
-          value={ChipType.DOUBLE_UP}
-          label="Double up — pick two teams this week"
-          status={doubleUp}
-          chip={chip}
-          onSelect={setChip}
-        />
-        <ChipRadio
-          value={ChipType.GAMBLE}
-          label="Gamble — win pays double, draw pays nothing, loss costs 3"
-          status={gamble}
-          chip={chip}
-          onSelect={setChip}
-        />
-        <ChipRadio
-          value={ChipType.CLEAN_SHEET}
-          label="Clean sheet — +2 points if your team doesn't concede"
-          status={cleanSheet}
-          chip={chip}
-          onSelect={setChip}
-        />
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <ChipRadio value="" label="No chip" chip={chip} onSelect={setChip} />
+          <ChipRadio
+            value={ChipType.DOUBLE_UP}
+            label="Double up"
+            status={doubleUp}
+            chip={chip}
+            onSelect={setChip}
+          />
+          <ChipRadio
+            value={ChipType.GAMBLE}
+            label="Gamble"
+            status={gamble}
+            chip={chip}
+            onSelect={setChip}
+          />
+          <ChipRadio
+            value={ChipType.CLEAN_SHEET}
+            label="Clean sheet"
+            status={cleanSheet}
+            chip={chip}
+            onSelect={setChip}
+          />
+        </div>
       </fieldset>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}

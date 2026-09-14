@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/db";
 import { logoutAction } from "@/app/login/actions";
 
 export default async function Nav() {
   const session = await getSession();
-  const signedIn = Boolean(session.playerId);
+  // A cookie can outlive the player it names (e.g. an admin removed the account) —
+  // confirm the player still exists rather than trusting the cookie alone.
+  const signedIn = session.playerId
+    ? Boolean(await prisma.player.findUnique({ where: { id: session.playerId }, select: { id: true } }))
+    : false;
 
   return (
     <header className="border-b border-zinc-200 bg-white">

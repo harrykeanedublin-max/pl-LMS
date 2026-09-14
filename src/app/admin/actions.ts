@@ -72,6 +72,76 @@ export async function addFixtureAction(
   return ok("Fixture added.");
 }
 
+/**
+ * Parses lines like "Arsenal vs Chelsea" (team names matched case-insensitively
+ * against full name or short code) and creates any fixtures that don't already
+ * exist. Reports lines it couldn't match rather than failing the whole batch.
+ */
+export async function addFixturesBulkAction(
+  gameweekId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const raw = String(formData.get("fixtures") ?? "");
+  const lines = raw
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) return fail("Paste at least one fixture, one per line.");
+
+  const teams = await prisma.team.findMany();
+  const byKey = new Map(teams.map((t) => [t.name.toLowerCase(), t]));
+  for (const t of teams) byKey.set(t.shortName.toLowerCase(), t);
+
+  const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId } });
+  const existingKey = (homeId: string, awayId: string) => `${homeId}:${awayId}`;
+  const existingSet = new Set(existingFixtures.map((f) => existingKey(f.homeTeamId, f.awayTeamId)));
+
+  const toCreate: { homeTeamId: string; awayTeamId: string }[] = [];
+  const problems: string[] = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(.+?)\s+vs?\.?\s+(.+)$/i);
+    if (!match) {
+      problems.push(`"${line}" — couldn't parse (expected "Home vs Away")`);
+      continue;
+    }
+    const home = byKey.get(match[1].trim().toLowerCase());
+    const away = byKey.get(match[2].trim().toLowerCase());
+    if (!home || !away) {
+      const unknown = [!home ? match[1].trim() : null, !away ? match[2].trim() : null]
+        .filter(Boolean)
+        .join(", ");
+      problems.push(`"${line}" — unrecognised team: ${unknown}`);
+      continue;
+    }
+    if (home.id === away.id) {
+      problems.push(`"${line}" — same team twice`);
+      continue;
+    }
+    const key = existingKey(home.id, away.id);
+    if (existingSet.has(key)) continue; // already added, skip quietly
+    existingSet.add(key);
+    toCreate.push({ homeTeamId: home.id, awayTeamId: away.id });
+  }
+
+  if (toCreate.length > 0) {
+    await prisma.fixture.createMany({
+      data: toCreate.map((f) => ({ gameweekId, ...f })),
+    });
+    revalidatePath(`/admin/gameweeks/${gameweekId}`);
+  }
+
+  if (problems.length > 0) {
+    return {
+      error: `Added ${toCreate.length} fixture(s). Couldn't add: ${problems.join("; ")}`,
+    };
+  }
+  return ok(`Added ${toCreate.length} fixture(s).`);
+}
+
 export async function updateFixtureResultAction(
   fixtureId: string,
   _prev: ActionState,

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AddFixtureForm from "@/components/admin/AddFixtureForm";
+import BulkAddFixturesForm from "@/components/admin/BulkAddFixturesForm";
 import FixtureResultForm from "@/components/admin/FixtureResultForm";
 
 export default async function ManageGameweekPage({
@@ -54,7 +55,10 @@ export default async function ManageGameweekPage({
             />
           ))}
         </div>
-        <AddFixtureForm gameweekId={gameweek.id} teams={teams} />
+        <div className="flex flex-col gap-3">
+          <AddFixtureForm gameweekId={gameweek.id} teams={teams} />
+          <BulkAddFixturesForm gameweekId={gameweek.id} />
+        </div>
       </section>
     </div>
   );

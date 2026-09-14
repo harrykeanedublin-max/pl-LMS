@@ -29,9 +29,12 @@ export async function submitPicksAction(
     return { error: "The deadline for this gameweek has passed." };
   }
 
-  const useDoubleUp = formData.get("chip_double_up") === "on";
-  const useGamble = formData.get("chip_gamble") === "on";
-  const useCleanSheet = formData.get("chip_clean_sheet") === "on";
+  const chipRaw = String(formData.get("chip") ?? "");
+  const chip: ChipType | null =
+    chipRaw === ChipType.DOUBLE_UP || chipRaw === ChipType.GAMBLE || chipRaw === ChipType.CLEAN_SHEET
+      ? chipRaw
+      : null;
+  const useDoubleUp = chip === ChipType.DOUBLE_UP;
 
   const team1 = String(formData.get("team1") ?? "");
   const team2 = useDoubleUp ? String(formData.get("team2") ?? "") : "";
@@ -42,15 +45,10 @@ export async function submitPicksAction(
   }
 
   const teamIds = useDoubleUp ? [team1, team2] : [team1];
+  const chipsRequested: ChipType[] = chip ? [chip] : [];
 
-  const chipsRequested: ChipType[] = [
-    ...(useDoubleUp ? [ChipType.DOUBLE_UP] : []),
-    ...(useGamble ? [ChipType.GAMBLE] : []),
-    ...(useCleanSheet ? [ChipType.CLEAN_SHEET] : []),
-  ];
-
-  const existingChipUsages = await prisma.chipUsage.findMany({ where: { playerId: player.id } });
-  for (const chip of chipsRequested) {
+  if (chip) {
+    const existingChipUsages = await prisma.chipUsage.findMany({ where: { playerId: player.id } });
     const used = existingChipUsages.find((c) => c.chipType === chip);
     if (used && used.gameweekId !== gameweekId) {
       return { error: `You've already used your ${CHIP_LABELS[chip]} chip in a different gameweek.` };

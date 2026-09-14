@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { ChipType } from "@prisma/client";
 import { submitPicksAction, type PickFormState } from "@/app/actions/picks";
 import TeamCrest from "@/components/TeamCrest";
 
@@ -16,6 +17,15 @@ export interface ChipStatus {
 }
 
 const initialState: PickFormState = {};
+
+type ChipChoice = "" | ChipType;
+
+function initialChip(doubleUp: ChipStatus, gamble: ChipStatus, cleanSheet: ChipStatus): ChipChoice {
+  if (doubleUp.activeThisWeek) return ChipType.DOUBLE_UP;
+  if (gamble.activeThisWeek) return ChipType.GAMBLE;
+  if (cleanSheet.activeThisWeek) return ChipType.CLEAN_SHEET;
+  return "";
+}
 
 export default function PickForm({
   gameweekId,
@@ -36,9 +46,10 @@ export default function PickForm({
 }) {
   const boundAction = submitPicksAction.bind(null, gameweekId);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
-  const [doubleUpChecked, setDoubleUpChecked] = useState(doubleUp.activeThisWeek);
+  const [chip, setChip] = useState<ChipChoice>(() => initialChip(doubleUp, gamble, cleanSheet));
   const [team1Id, setTeam1Id] = useState(currentTeam1Id ?? "");
   const [team2Id, setTeam2Id] = useState(currentTeam2Id ?? "");
+  const doubleUpChecked = chip === ChipType.DOUBLE_UP;
 
   // Teams still selectable for team2 must exclude whatever is chosen for team1, and vice versa.
   const teamOptions = (excludeId?: string) =>
@@ -100,22 +111,30 @@ export default function PickForm({
       </div>
 
       <fieldset className="flex flex-col gap-3 rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
-        <legend className="px-1 text-sm font-medium text-zinc-700">Chips (one-time use)</legend>
-        <ChipCheckbox
-          name="chip_double_up"
+        <legend className="px-1 text-sm font-medium text-zinc-700">
+          Chip (one-time use — at most one per gameweek)
+        </legend>
+        <ChipRadio value="" label="No chip this week" chip={chip} onSelect={setChip} />
+        <ChipRadio
+          value={ChipType.DOUBLE_UP}
           label="Double up — pick two teams this week"
           status={doubleUp}
-          onToggle={setDoubleUpChecked}
+          chip={chip}
+          onSelect={setChip}
         />
-        <ChipCheckbox
-          name="chip_gamble"
+        <ChipRadio
+          value={ChipType.GAMBLE}
           label="Gamble — win pays double, draw pays nothing, loss costs 3"
           status={gamble}
+          chip={chip}
+          onSelect={setChip}
         />
-        <ChipCheckbox
-          name="chip_clean_sheet"
+        <ChipRadio
+          value={ChipType.CLEAN_SHEET}
           label="Clean sheet — +2 points if your team doesn't concede"
           status={cleanSheet}
+          chip={chip}
+          onSelect={setChip}
         />
       </fieldset>
 
@@ -133,31 +152,34 @@ export default function PickForm({
   );
 }
 
-function ChipCheckbox({
-  name,
+function ChipRadio({
+  value,
   label,
   status,
-  onToggle,
+  chip,
+  onSelect,
 }: {
-  name: string;
+  value: ChipChoice;
   label: string;
-  status: ChipStatus;
-  onToggle?: (checked: boolean) => void;
+  status?: ChipStatus;
+  chip: ChipChoice;
+  onSelect: (value: ChipChoice) => void;
 }) {
-  const disabled = status.usedInGameweekNumber !== null;
+  const disabled = Boolean(status && status.usedInGameweekNumber !== null);
   return (
     <label className={`flex items-start gap-2 text-sm ${disabled ? "text-zinc-400" : "text-zinc-700"}`}>
       <input
-        type="checkbox"
-        name={name}
-        defaultChecked={status.activeThisWeek}
+        type="radio"
+        name="chip"
+        value={value}
+        checked={chip === value}
         disabled={disabled}
-        onChange={(e) => onToggle?.(e.target.checked)}
+        onChange={() => onSelect(value)}
         className="mt-0.5 accent-emerald-700"
       />
       <span>
         {label}
-        {disabled && (
+        {disabled && status && (
           <span className="block text-xs text-zinc-400">
             Already used in gameweek {status.usedInGameweekNumber}
           </span>

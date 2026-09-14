@@ -32,8 +32,8 @@ export default async function RulesPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">Chips</h2>
         <p className="text-sm text-zinc-700 mb-2">
-          Each chip can be played once across the whole pool. You can combine chips in the same
-          gameweek if you have more than one still available.
+          Each chip can be played once across the whole pool, and you can only play one chip per
+          gameweek.
         </p>
         <ul className="list-disc pl-5 text-sm text-zinc-700 space-y-2">
           <li>

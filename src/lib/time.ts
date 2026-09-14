@@ -41,3 +41,36 @@ export function irishLocalToUtc(dateTimeLocal: string): Date | null {
   const offset = utcGuess - asIfUtc;
   return new Date(utcGuess + offset);
 }
+
+/**
+ * Formats a date as Ireland/UK local time, 24-hour clock, regardless of where this
+ * code executes. Plain `date.toLocaleString()` uses whatever timezone and locale the
+ * *server* happens to run in - fine on a laptop set to Irish time, but Vercel's
+ * servers run in UTC and default to a US (12-hour, AM/PM) locale, so every date
+ * rendered server-side was silently wrong in both timezone and format there.
+ */
+export function formatIrishDateTime(date: Date): string {
+  return date.toLocaleString("en-GB", {
+    timeZone: LEAGUE_TIMEZONE,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+/** Short form for fixture kickoffs, e.g. "Fri 1 Jan, 15:30". */
+export function formatIrishKickoff(date: Date | null): string {
+  if (!date) return "Kickoff TBC";
+  return date.toLocaleString("en-GB", {
+    timeZone: LEAGUE_TIMEZONE,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}

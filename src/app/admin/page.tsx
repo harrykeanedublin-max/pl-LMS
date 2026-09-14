@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { toggleGameweekLockAction } from "./actions";
 import CreateGameweekForm from "@/components/admin/CreateGameweekForm";
+import { formatIrishDateTime } from "@/lib/time";
 
 export default async function AdminPage() {
   await requireAdmin();
@@ -48,7 +49,7 @@ export default async function AdminPage() {
               return (
                 <tr key={gw.id} className="border-b border-zinc-100">
                   <td className="py-2 pr-4">{gw.number}</td>
-                  <td className="py-2 pr-4">{gw.deadline.toLocaleString()}</td>
+                  <td className="py-2 pr-4">{formatIrishDateTime(gw.deadline)}</td>
                   <td className="py-2 pr-4">{gw._count.fixtures}</td>
                   <td className="py-2 pr-4">{gw._count.picks}</td>
                   <td className="py-2 pr-4">{gw.isLocked ? "Locked" : "Open"}</td>

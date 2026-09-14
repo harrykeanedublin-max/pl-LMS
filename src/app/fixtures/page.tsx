@@ -1,17 +1,7 @@
 import { requirePlayer } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import TeamCrest from "@/components/TeamCrest";
-
-function formatKickoff(kickoff: Date | null): string {
-  if (!kickoff) return "Kickoff TBC";
-  return kickoff.toLocaleString(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatIrishDateTime, formatIrishKickoff } from "@/lib/time";
 
 export default async function FixturesPage() {
   await requirePlayer();
@@ -36,7 +26,7 @@ export default async function FixturesPage() {
         <section key={gw.id}>
           <h2 className="text-lg font-semibold mb-1">Gameweek {gw.number}</h2>
           <p className="text-zinc-500 text-xs mb-3">
-            Pick deadline: {gw.deadline.toLocaleString()}
+            Pick deadline: {formatIrishDateTime(gw.deadline)}
           </p>
           {gw.fixtures.length === 0 ? (
             <p className="text-zinc-500 text-sm">No fixtures added yet.</p>
@@ -57,7 +47,7 @@ export default async function FixturesPage() {
                         {f.homeGoals}–{f.awayGoals}
                       </span>
                     ) : (
-                      formatKickoff(f.kickoff)
+                      formatIrishKickoff(f.kickoff)
                     )}
                   </span>
                 </li>

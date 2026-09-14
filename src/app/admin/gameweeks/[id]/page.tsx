@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import AddFixtureForm from "@/components/admin/AddFixtureForm";
 import BulkAddFixturesForm from "@/components/admin/BulkAddFixturesForm";
 import FixtureResultForm from "@/components/admin/FixtureResultForm";
+import { formatIrishDateTime } from "@/lib/time";
 
 export default async function ManageGameweekPage({
   params,
@@ -33,7 +34,7 @@ export default async function ManageGameweekPage({
       <div>
         <h1 className="text-2xl font-semibold mb-1">Gameweek {gameweek.number}</h1>
         <p className="text-zinc-600 text-sm">
-          Deadline: {gameweek.deadline.toLocaleString()} · {gameweek.isLocked ? "Locked" : "Open"}
+          Deadline: {formatIrishDateTime(gameweek.deadline)} · {gameweek.isLocked ? "Locked" : "Open"}
         </p>
       </div>
 

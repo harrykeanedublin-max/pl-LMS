@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import PickForm, { type ChipStatus } from "@/components/PickForm";
 import TeamCrest from "@/components/TeamCrest";
 import { pointsForPick, resultForTeam } from "@/lib/scoring";
+import { formatIrishDateTime } from "@/lib/time";
 
 export default async function DashboardPage() {
   const player = await requirePlayer();
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
         {currentGameweek ? (
           <>
             <p className="text-zinc-600 mb-6">
-              Deadline: {currentGameweek.deadline.toLocaleString()}
+              Deadline: {formatIrishDateTime(currentGameweek.deadline)}
             </p>
             <PickForm
               key={picksThisWeek.map((p) => p.teamId).join(",")}

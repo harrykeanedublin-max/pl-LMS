@@ -1,0 +1,191 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth";
+
+export interface ActionState {
+  error?: string;
+  success?: string;
+}
+
+const ok = (msg = "Saved."): ActionState => ({ success: msg });
+const fail = (msg: string): ActionState => ({ error: msg });
+
+export async function createGameweekAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const number = Number(formData.get("number"));
+  const deadlineRaw = String(formData.get("deadline") ?? "");
+  if (!number || number < 1) return fail("Enter a valid gameweek number.");
+  const deadline = new Date(deadlineRaw);
+  if (Number.isNaN(deadline.getTime())) return fail("Enter a valid deadline.");
+
+  const existing = await prisma.gameweek.findUnique({ where: { number } });
+  if (existing) return fail(`Gameweek ${number} already exists.`);
+
+  await prisma.gameweek.create({ data: { number, deadline } });
+  revalidatePath("/admin");
+  return ok("Gameweek created.");
+}
+
+export async function toggleGameweekLockAction(gameweekId: string): Promise<void> {
+  await requireAdmin();
+  const gw = await prisma.gameweek.findUnique({ where: { id: gameweekId } });
+  if (!gw) return;
+  await prisma.gameweek.update({ where: { id: gameweekId }, data: { isLocked: !gw.isLocked } });
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function updateGameweekDeadlineAction(
+  gameweekId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const deadlineRaw = String(formData.get("deadline") ?? "");
+  const deadline = new Date(deadlineRaw);
+  if (Number.isNaN(deadline.getTime())) return fail("Enter a valid deadline.");
+  await prisma.gameweek.update({ where: { id: gameweekId }, data: { deadline } });
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return ok("Deadline updated.");
+}
+
+export async function addFixtureAction(
+  gameweekId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const homeTeamId = String(formData.get("homeTeamId") ?? "");
+  const awayTeamId = String(formData.get("awayTeamId") ?? "");
+  if (!homeTeamId || !awayTeamId || homeTeamId === awayTeamId) {
+    return fail("Pick two different teams.");
+  }
+
+  const existing = await prisma.fixture.findFirst({ where: { gameweekId, homeTeamId, awayTeamId } });
+  if (existing) return fail("That fixture already exists for this gameweek.");
+
+  await prisma.fixture.create({ data: { gameweekId, homeTeamId, awayTeamId } });
+  revalidatePath(`/admin/gameweeks/${gameweekId}`);
+  return ok("Fixture added.");
+}
+
+export async function updateFixtureResultAction(
+  fixtureId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const homeGoalsRaw = String(formData.get("homeGoals") ?? "");
+  const awayGoalsRaw = String(formData.get("awayGoals") ?? "");
+  const played = formData.get("played") === "on";
+
+  const homeGoals = homeGoalsRaw === "" ? null : Number(homeGoalsRaw);
+  const awayGoals = awayGoalsRaw === "" ? null : Number(awayGoalsRaw);
+
+  if (played && (homeGoals === null || awayGoals === null || homeGoals < 0 || awayGoals < 0)) {
+    return fail("Enter both scores before marking the fixture as played.");
+  }
+
+  const fixture = await prisma.fixture.update({
+    where: { id: fixtureId },
+    data: { homeGoals, awayGoals, played },
+  });
+
+  revalidatePath(`/admin/gameweeks/${fixture.gameweekId}`);
+  revalidatePath("/standings");
+  revalidatePath("/");
+  return ok("Result saved.");
+}
+
+export async function deleteFixtureAction(fixtureId: string): Promise<void> {
+  await requireAdmin();
+  const fixture = await prisma.fixture.delete({ where: { id: fixtureId } });
+  revalidatePath(`/admin/gameweeks/${fixture.gameweekId}`);
+}
+
+export async function setPlayerPaidAction(playerId: string, paid: boolean): Promise<void> {
+  await requireAdmin();
+  await prisma.player.update({ where: { id: playerId }, data: { paid } });
+  revalidatePath("/admin/players");
+  revalidatePath("/standings");
+}
+
+export async function setPlayerAdminAction(playerId: string, isAdmin: boolean): Promise<void> {
+  await requireAdmin();
+  await prisma.player.update({ where: { id: playerId }, data: { isAdmin } });
+  revalidatePath("/admin/players");
+}
+
+export async function addTeamAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  const shortName = String(formData.get("shortName") ?? "").trim().toUpperCase();
+  if (!name || !shortName) return fail("Enter both a full name and a short code.");
+
+  const existing = await prisma.team.findFirst({ where: { OR: [{ name }, { shortName }] } });
+  if (existing) return fail("A team with that name or short code already exists.");
+
+  await prisma.team.create({ data: { name, shortName } });
+  revalidatePath("/admin/teams");
+  return ok("Team added.");
+}
+
+export async function deleteTeamAction(
+  teamId: string,
+  _prev: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const [pickCount, fixtureCount] = await Promise.all([
+    prisma.pick.count({ where: { teamId } }),
+    prisma.fixture.count({ where: { OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }] } }),
+  ]);
+  if (pickCount > 0 || fixtureCount > 0) {
+    return fail("Can't remove a team that already has picks or fixtures.");
+  }
+  await prisma.team.delete({ where: { id: teamId } });
+  revalidatePath("/admin/teams");
+  return ok("Team removed.");
+}
+
+export async function updateConfigAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const poolName = String(formData.get("poolName") ?? "").trim();
+  const entryFeeEuro = Number(formData.get("entryFeeEuro"));
+  const numGameweeks = Number(formData.get("numGameweeks"));
+  const first = Number(formData.get("splitFirst"));
+  const second = Number(formData.get("splitSecond"));
+  const third = Number(formData.get("splitThird"));
+
+  if (!poolName) return fail("Enter a pool name.");
+  if (!entryFeeEuro || entryFeeEuro <= 0) return fail("Enter a valid entry fee.");
+  if (!numGameweeks || numGameweeks <= 0) return fail("Enter a valid number of gameweeks.");
+
+  const total = (first || 0) + (second || 0) + (third || 0);
+  if (Math.round(total) !== 100) return fail("Payout shares must add up to 100%.");
+
+  const payoutSplit: Record<string, number> = {};
+  if (first) payoutSplit["1"] = first / 100;
+  if (second) payoutSplit["2"] = second / 100;
+  if (third) payoutSplit["3"] = third / 100;
+
+  await prisma.poolConfig.upsert({
+    where: { id: "singleton" },
+    update: { poolName, entryFeeEuro, numGameweeks, payoutSplit: JSON.stringify(payoutSplit) },
+    create: {
+      id: "singleton",
+      poolName,
+      entryFeeEuro,
+      numGameweeks,
+      payoutSplit: JSON.stringify(payoutSplit),
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/rules");
+  revalidatePath("/standings");
+  return ok("Pool settings updated.");
+}

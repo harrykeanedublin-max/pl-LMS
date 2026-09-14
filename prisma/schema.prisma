@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Player {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  nameLower    String      @unique
+  passcodeHash String
+  isAdmin      Boolean     @default(false)
+  paid         Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  picks        Pick[]
+  chipUsages   ChipUsage[]
+}
+
+model Team {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  shortName    String    @unique
+  picks        Pick[]
+  homeFixtures Fixture[] @relation("HomeTeam")
+  awayFixtures Fixture[] @relation("AwayTeam")
+}
+
+model Gameweek {
+  id         String      @id @default(cuid())
+  number     Int         @unique
+  deadline   DateTime
+  isLocked   Boolean     @default(false)
+  fixtures   Fixture[]
+  picks      Pick[]
+  chipUsages ChipUsage[]
+}
+
+model Fixture {
+  id         String   @id @default(cuid())
+  gameweekId String
+  gameweek   Gameweek @relation(fields: [gameweekId], references: [id], onDelete: Cascade)
+  homeTeamId String
+  homeTeam   Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId String
+  awayTeam   Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeGoals  Int?
+  awayGoals  Int?
+  played     Boolean  @default(false)
+
+  @@unique([gameweekId, homeTeamId, awayTeamId])
+}
+
+enum ChipType {
+  GAMBLE
+  DOUBLE_UP
+  CLEAN_SHEET
+}
+
+model ChipUsage {
+  id         String   @id @default(cuid())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  chipType   ChipType
+  gameweekId String
+  gameweek   Gameweek @relation(fields: [gameweekId], references: [id], onDelete: Cascade)
+  usedAt     DateTime @default(now())
+
+  @@unique([playerId, chipType])
+}
+
+model Pick {
+  id         String   @id @default(cuid())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  gameweekId String
+  gameweek   Gameweek @relation(fields: [gameweekId], references: [id], onDelete: Cascade)
+  teamId     String
+  team       Team     @relation(fields: [teamId], references: [id])
+  createdAt  DateTime @default(now())
+
+  // A player can never pick the same team twice across the whole pool.
+  @@unique([playerId, teamId])
+}
+
+model PoolConfig {
+  id           String @id @default("singleton")
+  poolName     String @default("Premier League Pick'em")
+  entryFeeEuro Int    @default(20)
+  numGameweeks Int    @default(19)
+  // JSON map of finishing position -> share of the pot, e.g. {"1":0.7,"2":0.2,"3":0.1}
+  payoutSplit  String @default("{\"1\":0.7,\"2\":0.2,\"3\":0.1}")
+}

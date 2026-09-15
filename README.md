@@ -42,11 +42,37 @@ This app uses Postgres via Prisma. A free option that works well with Vercel:
 1. Push this repo to GitHub.
 2. Import it into [vercel.com](https://vercel.com/new).
 3. Add the same environment variables from your `.env` (`DATABASE_URL`,
-   `DIRECT_URL`, `SESSION_SECRET`, `ADMIN_SETUP_CODE`) in the Vercel project
-   settings.
+   `DIRECT_URL`, `SESSION_SECRET`, `ADMIN_SETUP_CODE`, `FOOTBALL_DATA_API_KEY`,
+   `CRON_SECRET`) in the Vercel project settings.
 4. Set the build command to run migrations first: `npx prisma migrate deploy && next build`.
 5. Deploy. Run `npm run db:seed` once (locally, pointed at the production
    `DATABASE_URL`) to seed the 20 PL teams.
+6. Vercel reads [vercel.json](vercel.json) automatically and schedules the
+   daily fixture/result sync — nothing extra to configure there, just make
+   sure Cron Jobs are enabled for the project (they are by default on Hobby).
+
+## Fixture &amp; result sync
+
+Fixtures, kickoff times, and results can sync automatically from
+[football-data.org](https://www.football-data.org/) instead of being typed in
+by hand:
+
+- A free API key from football-data.org goes in `FOOTBALL_DATA_API_KEY`.
+- `CRON_SECRET` is a random string you generate yourself; it authorizes the
+  scheduled job (Vercel sends it automatically once set).
+- The sync ([src/lib/sync.ts](src/lib/sync.ts)) runs once a day via Vercel Cron
+  ([src/app/api/cron/sync/route.ts](src/app/api/cron/sync/route.ts),
+  configured in [vercel.json](vercel.json)) and can also be triggered any time
+  from `/admin` ("Sync fixtures & results now").
+- It only ever updates gameweeks that already exist — matched by gameweek
+  number against football-data.org's matchday number — and never creates a
+  gameweek or changes its deadline. Creating each Gameweek stays a manual,
+  admin-only step.
+- Teams are matched by name the first time (using each team's name, short
+  code, and aliases from `/admin/teams`), and the match is remembered
+  (`Team.externalId`) so later syncs don't need to re-match by name.
+- The free football-data.org plan is rate-limited (10 requests/minute) and
+  covers this comfortably at once a day.
 
 ## Notes
 

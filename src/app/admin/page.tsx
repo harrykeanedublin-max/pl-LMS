@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { toggleGameweekLockAction } from "./actions";
 import CreateGameweekForm from "@/components/admin/CreateGameweekForm";
+import SyncNowButton from "@/components/admin/SyncNowButton";
 import { formatIrishDateTime } from "@/lib/time";
 
 export default async function AdminPage() {
@@ -78,6 +79,11 @@ export default async function AdminPage() {
         </table>
         </div>
         <CreateGameweekForm />
+      </section>
+
+      <section>
+        <h2 className="font-display text-sm text-ink mb-3">Fixture &amp; result sync</h2>
+        <SyncNowButton />
       </section>
     </div>
   );

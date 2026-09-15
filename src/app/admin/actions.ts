@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireAdmin, hashPasscode } from "@/lib/auth";
 import { fetchCrestUrl } from "@/lib/crests";
 import { irishLocalToUtc } from "@/lib/time";
+import { syncFromFootballData } from "@/lib/sync";
 
 export interface ActionState {
   error?: string;
@@ -28,6 +29,37 @@ export async function createGameweekAction(_prev: ActionState, formData: FormDat
   await prisma.gameweek.create({ data: { number, deadline } });
   revalidatePath("/admin");
   return ok("Gameweek created.");
+}
+
+/**
+ * Pulls fixtures/kickoffs/results from football-data.org for every gameweek
+ * that already exists here (matched by number == their matchday). Never
+ * creates gameweeks - only the admin does that, via createGameweekAction.
+ */
+export async function syncFixturesAction(_prev: ActionState, _formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  try {
+    const summary = await syncFromFootballData();
+    revalidatePath("/admin");
+    revalidatePath("/fixtures");
+    revalidatePath("/standings");
+    revalidatePath("/picks");
+    revalidatePath("/");
+
+    const parts = [
+      `Checked matchday(s) ${summary.matchdaysChecked.join(", ") || "none"}`,
+      `${summary.fixturesCreated} fixture(s) added`,
+      `${summary.fixturesUpdated} updated`,
+      `${summary.resultsUpdated} result(s) filled in`,
+    ];
+    if (summary.unmatchedTeams.length > 0) {
+      parts.push(`couldn't match: ${summary.unmatchedTeams.join(", ")}`);
+      return { error: parts.join(". ") + "." };
+    }
+    return ok(parts.join(". ") + ".");
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Sync failed.");
+  }
 }
 
 export async function toggleGameweekLockAction(gameweekId: string): Promise<void> {

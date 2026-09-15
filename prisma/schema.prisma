@@ -29,6 +29,9 @@ model Team {
   // official name or short code.
   aliases      String[]  @default([])
   crestUrl     String?
+  // football-data.org's numeric team id, once resolved - lets the fixture
+  // sync job match teams reliably instead of by name every time.
+  externalId   Int?      @unique
   picks        Pick[]
   homeFixtures Fixture[] @relation("HomeTeam")
   awayFixtures Fixture[] @relation("AwayTeam")

@@ -14,8 +14,8 @@
   --color-mustard: #c98a2c;
   --color-mustard-dark: #a06f21;
 
-  --font-display: "Archivo Black", ui-sans-serif, sans-serif;
-  --font-body: "Libre Franklin", ui-sans-serif, sans-serif;
+  --font-display: "Oswald", ui-sans-serif, sans-serif;
+  --font-body: "Karla", ui-sans-serif, sans-serif;
 }
 
 :root {
@@ -24,4 +24,10 @@
 
 body {
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
+}
+
+/* Oswald (unlike the previous Archivo Black) isn't inherently a black
+   weight, so headings need an explicit weight to keep the same presence. */
+.font-display {
+  font-weight: 600;
 }

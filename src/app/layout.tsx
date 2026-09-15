@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Archivo_Black, Libre_Franklin } from "next/font/google";
+import { Oswald, Karla } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 
-const archivoBlack = Archivo_Black({
+const oswald = Oswald({
   variable: "--font-display",
-  weight: "400",
   subsets: ["latin"],
 });
 
-const libreFranklin = Libre_Franklin({
+const karla = Karla({
   variable: "--font-body",
   subsets: ["latin"],
 });
@@ -23,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${archivoBlack.variable} ${libreFranklin.variable} h-full antialiased`}
+      className={`${oswald.variable} ${karla.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-paper text-ink font-body">
         <Nav />

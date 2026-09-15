@@ -15,7 +15,7 @@ const libreFranklin = Libre_Franklin({
 });
 
 export const metadata: Metadata = {
-  title: "Not LMS 2, Electric Boogaloo",
+  title: "Not LMS 2",
   description: "Premier League weekly team pick'em pool",
 };
 

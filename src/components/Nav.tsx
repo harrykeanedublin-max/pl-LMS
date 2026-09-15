@@ -30,7 +30,7 @@ export default async function Nav() {
     <header className="relative border-b-[3px] border-forest-dark bg-forest text-cream">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="font-display text-base tracking-tight text-cream">
-          Not LMS 2, Electric Boogaloo
+          Not LMS 2
         </Link>
 
         {/* Desktop nav */}

@@ -13,7 +13,7 @@ export default async function AdminConfigPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Pool settings</h1>
+      <h1 className="font-display text-xl text-ink">Pool settings</h1>
       <ConfigForm
         poolName={config.poolName}
         entryFeeEuro={config.entryFeeEuro}

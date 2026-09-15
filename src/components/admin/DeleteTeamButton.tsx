@@ -11,7 +11,7 @@ export default function DeleteTeamButton({ teamId }: { teamId: string }) {
 
   return (
     <form action={formAction} className="inline-flex items-center gap-2">
-      <button type="submit" disabled={pending} className="text-zinc-400 hover:text-red-600 disabled:opacity-40">
+      <button type="submit" disabled={pending} className="text-sub/60 hover:text-red-600 disabled:opacity-40">
         Remove
       </button>
       {state.error && <span className="text-xs text-red-600">{state.error}</span>}

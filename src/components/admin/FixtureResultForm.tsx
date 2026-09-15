@@ -46,7 +46,7 @@ export default function FixtureResultForm({
   const kickoffIso = kickoffLocal ? new Date(kickoffLocal).toISOString() : "";
 
   return (
-    <form action={formAction} className="flex flex-wrap items-center gap-3 border-b border-zinc-100 py-2 text-sm">
+    <form action={formAction} className="flex flex-wrap items-center gap-3 border-b border-dashed border-line py-2 text-sm">
       <span className="w-56 flex items-center gap-1.5">
         <TeamCrest src={homeTeamCrestUrl} name={homeTeamName} size={18} />
         {homeTeamName} vs {awayTeamName}
@@ -56,7 +56,7 @@ export default function FixtureResultForm({
         type="datetime-local"
         value={kickoffLocal}
         onChange={(e) => setKickoffLocal(e.target.value)}
-        className="rounded-md border border-zinc-300 px-2 py-1 text-xs"
+        className="rounded-md border border-line px-2 py-1 text-xs"
       />
       <input type="hidden" name="kickoff" value={kickoffIso} />
       <input
@@ -65,7 +65,7 @@ export default function FixtureResultForm({
         min={0}
         defaultValue={homeGoals ?? ""}
         placeholder="H"
-        className="w-16 rounded-md border border-zinc-300 px-2 py-1"
+        className="w-16 rounded-md border border-line px-2 py-1"
       />
       <span>–</span>
       <input
@@ -74,23 +74,23 @@ export default function FixtureResultForm({
         min={0}
         defaultValue={awayGoals ?? ""}
         placeholder="A"
-        className="w-16 rounded-md border border-zinc-300 px-2 py-1"
+        className="w-16 rounded-md border border-line px-2 py-1"
       />
-      <label className="flex items-center gap-1 text-zinc-600">
+      <label className="flex items-center gap-1 text-sub">
         <input name="played" type="checkbox" defaultChecked={played} />
         Played
       </label>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-emerald-800 text-white px-3 py-1 hover:bg-emerald-700 disabled:opacity-50"
+        className="rounded-md bg-forest text-cream px-3 py-1 hover:bg-forest-dark disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save"}
       </button>
       <button
         type="submit"
         formAction={deleteAction}
-        className="text-zinc-400 hover:text-red-600"
+        className="text-sub/60 hover:text-red-600"
       >
         Remove
       </button>

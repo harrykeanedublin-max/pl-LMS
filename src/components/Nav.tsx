@@ -27,16 +27,10 @@ export default async function Nav() {
       ];
 
   return (
-    <header
-      className="relative border-b-4 border-emerald-950 bg-emerald-900 text-emerald-50"
-      style={{
-        backgroundImage:
-          "repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 40px, transparent 40px, transparent 80px)",
-      }}
-    >
+    <header className="relative border-b-[3px] border-forest-dark bg-forest text-cream">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold tracking-tight text-white">
-          ⚽ Not LMS 2, Electric Boogaloo
+        <Link href="/" className="font-display text-base tracking-tight text-cream">
+          Not LMS 2, Electric Boogaloo
         </Link>
 
         {/* Desktop nav */}
@@ -47,7 +41,7 @@ export default async function Nav() {
               href={l.href}
               className={
                 "admin" in l && l.admin
-                  ? "hover:underline text-amber-300 font-medium"
+                  ? "hover:underline text-mustard font-semibold"
                   : "hover:text-white hover:underline"
               }
             >
@@ -56,10 +50,10 @@ export default async function Nav() {
           ))}
           {signedIn && (
             <>
-              <span className="text-emerald-700">|</span>
-              <span className="text-emerald-100">{session.playerName}</span>
+              <span className="text-forest-dark">|</span>
+              <span className="text-cream/80">{session.playerName}</span>
               <form action={logoutAction}>
-                <button type="submit" className="text-emerald-200 hover:text-white hover:underline">
+                <button type="submit" className="text-cream/70 hover:text-white hover:underline">
                   Sign out
                 </button>
               </form>
@@ -75,8 +69,8 @@ export default async function Nav() {
               href={l.href}
               className={
                 "admin" in l && l.admin
-                  ? "py-2 text-amber-300 font-medium"
-                  : "py-2 text-emerald-50 hover:text-white"
+                  ? "py-2 text-mustard font-semibold"
+                  : "py-2 text-cream hover:text-white"
               }
             >
               {l.label}
@@ -84,10 +78,10 @@ export default async function Nav() {
           ))}
           {signedIn && (
             <>
-              <div className="border-t border-emerald-800 my-1" />
-              <span className="py-2 text-emerald-200">{session.playerName}</span>
+              <div className="border-t border-forest-dark my-1" />
+              <span className="py-2 text-cream/70">{session.playerName}</span>
               <form action={logoutAction}>
-                <button type="submit" className="py-2 text-emerald-200 hover:text-white text-left w-full">
+                <button type="submit" className="py-2 text-cream/70 hover:text-white text-left w-full">
                   Sign out
                 </button>
               </form>

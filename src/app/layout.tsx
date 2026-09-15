@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo_Black, Libre_Franklin } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivoBlack = Archivo_Black({
+  variable: "--font-display",
+  weight: "400",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const libreFranklin = Libre_Franklin({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
@@ -22,9 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivoBlack.variable} ${libreFranklin.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-stone-50 text-zinc-900">
+      <body className="min-h-full flex flex-col bg-paper text-ink font-body">
         <Nav />
         <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">{children}</main>
       </body>

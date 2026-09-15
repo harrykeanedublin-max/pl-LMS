@@ -12,7 +12,7 @@ export default function ResetPasscodeForm({ playerId }: { playerId: string }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-zinc-500 hover:underline">
+      <button onClick={() => setOpen(true)} className="text-sub hover:underline">
         Reset passcode
       </button>
     );
@@ -26,17 +26,17 @@ export default function ResetPasscodeForm({ playerId }: { playerId: string }) {
         placeholder="New passcode"
         required
         minLength={4}
-        className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+        className="rounded-md border border-line px-2 py-1 text-sm"
       />
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-emerald-800 text-white px-2 py-1 text-sm hover:bg-emerald-700 disabled:opacity-50"
+        className="rounded-md bg-forest text-cream px-2 py-1 text-sm hover:bg-forest-dark disabled:opacity-50"
       >
         {pending ? "Saving…" : "Set"}
       </button>
       {state.error && <span className="text-xs text-red-600">{state.error}</span>}
-      {state.success && <span className="text-xs text-emerald-600">{state.success}</span>}
+      {state.success && <span className="text-xs text-forest">{state.success}</span>}
     </form>
   );
 }

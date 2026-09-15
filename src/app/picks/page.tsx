@@ -28,16 +28,16 @@ export default async function PicksPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <h1 className="text-2xl font-semibold">Picks</h1>
+      <h1 className="font-display text-xl text-ink">Picks</h1>
 
       {upcomingCount > 0 && (
-        <p className="text-zinc-500 text-sm -mt-6">
+        <p className="text-sub text-sm -mt-6">
           Picks for the current gameweek stay hidden until its deadline passes.
         </p>
       )}
 
       {gameweeks.length === 0 && (
-        <p className="text-zinc-500 text-sm">No gameweeks revealed yet.</p>
+        <p className="text-sub text-sm">No gameweeks revealed yet.</p>
       )}
 
       {gameweeks
@@ -59,14 +59,14 @@ export default async function PicksPage() {
 
           return (
             <section key={gw.id}>
-              <h2 className="text-lg font-semibold mb-1">Gameweek {gw.number}</h2>
-              <p className="text-zinc-500 text-xs mb-3">
+              <h2 className="font-display text-sm text-ink mb-1">Gameweek {gw.number}</h2>
+              <p className="text-sub text-xs mb-3">
                 Deadline: {formatIrishDateTime(gw.deadline)}
               </p>
               <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="text-left text-zinc-500 border-b border-zinc-200">
+                  <tr className="text-left text-sub border-b border-line">
                     <th className="py-2 pr-4">Player</th>
                     <th className="py-2 pr-4">Pick(s)</th>
                     <th className="py-2 pr-4">Chip</th>
@@ -90,11 +90,11 @@ export default async function PicksPage() {
                     }
 
                     return (
-                      <tr key={player.id} className="border-b border-zinc-100 align-top">
+                      <tr key={player.id} className="border-b border-dashed border-line align-top">
                         <td className="py-2 pr-4 font-medium">{player.name}</td>
                         <td className="py-2 pr-4">
                           {picks.length === 0 ? (
-                            <span className="text-zinc-400">No pick</span>
+                            <span className="text-sub/60">No pick</span>
                           ) : (
                             <div className="flex flex-col gap-1">
                               {picks.map((pick) => (
@@ -106,7 +106,7 @@ export default async function PicksPage() {
                             </div>
                           )}
                         </td>
-                        <td className="py-2 pr-4 text-zinc-600">{chip ? CHIP_LABEL[chip] : ""}</td>
+                        <td className="py-2 pr-4 text-sub">{chip ? CHIP_LABEL[chip] : ""}</td>
                         <td className="py-2 pr-4">
                           {picks.length === 0 ? "—" : anyPending ? `${total} (pending)` : total}
                         </td>

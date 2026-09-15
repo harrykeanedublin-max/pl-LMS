@@ -51,8 +51,8 @@ export default async function StandingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold mb-1">Standings</h1>
-        <p className="text-zinc-600 text-sm">
+        <h1 className="font-display text-xl text-ink mb-1">Standings</h1>
+        <p className="text-sub text-sm">
           Pot so far: €{pot} ({paidPlayers} paid entries × €{config?.entryFeeEuro ?? 20})
         </p>
       </div>
@@ -60,7 +60,7 @@ export default async function StandingsPage() {
       <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="text-left text-zinc-500 border-b border-zinc-200">
+          <tr className="text-left text-sub border-b border-line">
             <th className="py-2 pr-4">#</th>
             <th className="py-2 pr-4">Player</th>
             <th className="py-2 pr-4">Points</th>
@@ -72,15 +72,15 @@ export default async function StandingsPage() {
           {standings.map((row, i) => (
             <tr
               key={row.playerId}
-              className={`border-b border-zinc-100 ${i === 0 ? "bg-amber-50" : ""}`}
+              className={`border-b border-dashed border-line ${i === 0 ? "bg-mustard/15" : ""}`}
             >
-              <td className="py-2 pr-4 text-zinc-500">{i + 1}</td>
+              <td className="py-2 pr-4 text-sub">{i + 1}</td>
               <td className="py-2 pr-4 font-medium">
                 {i === 0 && <span className="mr-1">🏆</span>}
                 {row.playerName}
               </td>
-              <td className="py-2 pr-4">{row.points}</td>
-              <td className="py-2 pr-4 text-zinc-500">{row.pendingPicks || ""}</td>
+              <td className="py-2 pr-4 font-semibold">{row.points}</td>
+              <td className="py-2 pr-4 text-sub">{row.pendingPicks || ""}</td>
               <td className="py-2 pr-4">
                 {row.chipsUsed.map((c) => (
                   <span key={c} title={c} className="mr-1">

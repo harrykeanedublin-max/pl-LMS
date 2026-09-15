@@ -9,11 +9,11 @@ export default async function AdminPlayersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Players</h1>
+      <h1 className="font-display text-xl text-ink">Players</h1>
       <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="text-left text-zinc-500 border-b border-zinc-200">
+          <tr className="text-left text-sub border-b border-line">
             <th className="py-2 pr-4">Name</th>
             <th className="py-2 pr-4">Paid</th>
             <th className="py-2 pr-4">Admin</th>
@@ -25,13 +25,13 @@ export default async function AdminPlayersPage() {
             const togglePaid = setPlayerPaidAction.bind(null, p.id, !p.paid);
             const toggleAdmin = setPlayerAdminAction.bind(null, p.id, !p.isAdmin);
             return (
-              <tr key={p.id} className="border-b border-zinc-100">
+              <tr key={p.id} className="border-b border-dashed border-line">
                 <td className="py-2 pr-4">{p.name}</td>
                 <td className="py-2 pr-4">
                   <form action={togglePaid}>
                     <button
                       type="submit"
-                      className={p.paid ? "text-emerald-700 hover:underline" : "text-zinc-500 hover:underline"}
+                      className={p.paid ? "text-forest hover:underline" : "text-sub hover:underline"}
                     >
                       {p.paid ? "Paid ✓" : "Mark paid"}
                     </button>
@@ -42,7 +42,7 @@ export default async function AdminPlayersPage() {
                     <button
                       type="submit"
                       disabled={p.id === me.id}
-                      className="text-zinc-500 hover:underline disabled:opacity-40"
+                      className="text-sub hover:underline disabled:opacity-40"
                     >
                       {p.isAdmin ? "Admin ✓" : "Make admin"}
                     </button>

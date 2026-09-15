@@ -15,14 +15,14 @@ export default function LoginForm() {
 
   return (
     <div className="max-w-sm mx-auto">
-      <h1 className="text-2xl font-semibold mb-1">Welcome back</h1>
-      <p className="text-zinc-600 mb-6">Sign in, or set up your player if this is your first visit.</p>
+      <h1 className="font-display text-xl text-ink mb-1">Welcome back</h1>
+      <p className="text-sub mb-6">Sign in, or set up your player if this is your first visit.</p>
 
-      <div className="flex gap-2 mb-6 border-b border-zinc-200">
+      <div className="flex gap-2 mb-6 border-b border-line">
         <button
           onClick={() => setMode("login")}
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === "login" ? "border-emerald-800 text-emerald-800" : "border-transparent text-zinc-500"
+            mode === "login" ? "border-forest text-forest" : "border-transparent text-sub"
           }`}
         >
           Sign in
@@ -30,7 +30,7 @@ export default function LoginForm() {
         <button
           onClick={() => setMode("register")}
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px ${
-            mode === "register" ? "border-emerald-800 text-emerald-800" : "border-transparent text-zinc-500"
+            mode === "register" ? "border-forest text-forest" : "border-transparent text-sub"
           }`}
         >
           New player
@@ -45,7 +45,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={loginPending}
-            className="rounded-md bg-emerald-800 text-white py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
+            className="rounded-md bg-forest text-cream py-2 text-sm font-medium hover:bg-forest-dark disabled:opacity-50"
           >
             {loginPending ? "Signing in…" : "Sign in"}
           </button>
@@ -71,7 +71,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={registerPending}
-            className="rounded-md bg-emerald-800 text-white py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
+            className="rounded-md bg-forest text-cream py-2 text-sm font-medium hover:bg-forest-dark disabled:opacity-50"
           >
             {registerPending ? "Creating…" : "Create player"}
           </button>
@@ -96,15 +96,15 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium text-zinc-700">{label}</span>
+      <span className="font-medium text-ink">{label}</span>
       <input
         name={name}
         type={type}
         autoComplete={autoComplete}
         required={name !== "adminCode"}
-        className="rounded-md border border-zinc-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-600"
+        className="rounded-md border border-line px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-forest"
       />
-      {hint && <span className="text-xs text-zinc-500">{hint}</span>}
+      {hint && <span className="text-xs text-sub">{hint}</span>}
     </label>
   );
 }

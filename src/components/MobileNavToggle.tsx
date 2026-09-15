@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 export default function MobileNavToggle({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [lastPathname, setLastPathname] = useState(pathname);
 
   // Nav lives in the root layout, so it isn't remounted between page
   // navigations - close the menu whenever the route actually changes
   // instead of on every click inside it (that used to unmount the sign-out
-  // form mid-submission and silently break logout on mobile).
-  useEffect(() => {
+  // form mid-submission and silently break logout on mobile). Adjusting
+  // state during render (React's documented pattern for this) instead of
+  // an effect avoids an extra render pass.
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <>
@@ -34,7 +38,7 @@ export default function MobileNavToggle({ children }: { children: React.ReactNod
         )}
       </button>
       {open && (
-        <div className="sm:hidden absolute left-0 right-0 top-14 bg-emerald-900 border-t border-emerald-800 shadow-lg z-10">
+        <div className="sm:hidden absolute left-0 right-0 top-14 bg-forest border-t border-forest-dark shadow-lg z-10">
           <nav className="flex flex-col px-4 py-3 gap-1 text-sm">{children}</nav>
         </div>
       )}

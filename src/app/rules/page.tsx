@@ -7,13 +7,13 @@ export default async function RulesPage() {
   return (
     <div className="max-w-2xl flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold mb-1">{config?.poolName ?? "Premier League Pick'em"}</h1>
-        <p className="text-zinc-600 text-sm">Entry: €{config?.entryFeeEuro ?? 20} · {config?.numGameweeks ?? 19} gameweeks</p>
+        <h1 className="font-display text-xl text-ink mb-1">{config?.poolName ?? "Premier League Pick'em"}</h1>
+        <p className="text-sub text-sm">Entry: €{config?.entryFeeEuro ?? 20} · {config?.numGameweeks ?? 19} gameweeks</p>
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">How it works</h2>
-        <ul className="list-disc pl-5 text-sm text-zinc-700 space-y-1">
+        <h2 className="font-display text-sm text-ink mb-2">How it works</h2>
+        <ul className="list-disc pl-5 text-sm text-ink space-y-1">
           <li>Each gameweek, pick one Premier League team you think will win.</li>
           <li>You can never pick the same team twice across the whole pool.</li>
           <li>Picks lock at the gameweek deadline set by the organiser.</li>
@@ -21,8 +21,8 @@ export default async function RulesPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">Scoring</h2>
-        <ul className="list-disc pl-5 text-sm text-zinc-700 space-y-1">
+        <h2 className="font-display text-sm text-ink mb-2">Scoring</h2>
+        <ul className="list-disc pl-5 text-sm text-ink space-y-1">
           <li>Win: 3 points</li>
           <li>Draw: 1 point</li>
           <li>Loss: 0 points</li>
@@ -30,12 +30,12 @@ export default async function RulesPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">Chips</h2>
-        <p className="text-sm text-zinc-700 mb-2">
+        <h2 className="font-display text-sm text-ink mb-2">Chips</h2>
+        <p className="text-sm text-ink mb-2">
           Each chip can be played once across the whole pool, and you can only play one chip per
           gameweek.
         </p>
-        <ul className="list-disc pl-5 text-sm text-zinc-700 space-y-2">
+        <ul className="list-disc pl-5 text-sm text-ink space-y-2">
           <li>
             <strong>Double up</strong> — pick two teams instead of one for that gameweek. Both are
             scored normally and add to your total; both count as teams used.
@@ -52,12 +52,12 @@ export default async function RulesPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">The pot</h2>
-        <p className="text-sm text-zinc-700">
+        <h2 className="font-display text-sm text-ink mb-2">The pot</h2>
+        <p className="text-sm text-ink">
           Everyone pays €{config?.entryFeeEuro ?? 20} to enter. At the end of the pool, the pot is
           split:
         </p>
-        <ul className="list-disc pl-5 text-sm text-zinc-700 space-y-1">
+        <ul className="list-disc pl-5 text-sm text-ink space-y-1">
           {Object.entries(payoutSplit)
             .sort(([a], [b]) => Number(a) - Number(b))
             .map(([place, share]) => (

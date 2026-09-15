@@ -63,7 +63,7 @@ export default function PickForm({
     <form action={formAction} className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-zinc-700">{doubleUpChecked ? "Team 1" : "Your pick"}</span>
+          <span className="font-medium text-ink">{doubleUpChecked ? "Team 1" : "Your pick"}</span>
           <div className="flex items-center gap-2">
             <TeamCrest src={team1?.crestUrl} name={team1?.name ?? "?"} size={28} />
             <select
@@ -71,7 +71,7 @@ export default function PickForm({
               value={team1Id}
               onChange={(e) => setTeam1Id(e.target.value)}
               required
-              className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-base"
+              className="flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
             >
               <option value="" disabled>
                 Choose a team…
@@ -87,7 +87,7 @@ export default function PickForm({
 
         {doubleUpChecked && (
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-zinc-700">Team 2</span>
+            <span className="font-medium text-ink">Team 2</span>
             <div className="flex items-center gap-2">
               <TeamCrest src={team2?.crestUrl} name={team2?.name ?? "?"} size={28} />
               <select
@@ -95,7 +95,7 @@ export default function PickForm({
                 value={team2Id}
                 onChange={(e) => setTeam2Id(e.target.value)}
                 required
-                className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-base"
+                className="flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
               >
                 <option value="" disabled>
                   Choose a team…
@@ -111,10 +111,10 @@ export default function PickForm({
         )}
       </div>
 
-      <fieldset className="flex flex-col gap-2 rounded-md border border-emerald-100 bg-emerald-50/40 p-4">
-        <legend className="px-1 text-sm font-medium text-zinc-700">
+      <fieldset className="flex flex-col gap-2 rounded-md border border-line bg-cream/40 p-4">
+        <legend className="px-1 text-sm font-medium text-ink">
           Chip — one per gameweek,{" "}
-          <Link href="/rules" className="text-emerald-700 hover:underline font-normal">
+          <Link href="/rules" className="text-forest hover:underline font-normal">
             what do they do?
           </Link>
         </legend>
@@ -145,12 +145,12 @@ export default function PickForm({
       </fieldset>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state.success && <p className="text-sm text-emerald-600">{state.success}</p>}
+      {state.success && <p className="text-sm text-forest">{state.success}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-emerald-800 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
+        className="self-start rounded-md bg-forest text-cream px-4 py-2 text-sm font-medium hover:bg-forest-dark disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save pick"}
       </button>
@@ -173,7 +173,7 @@ function ChipRadio({
 }) {
   const disabled = Boolean(status && status.usedInGameweekNumber !== null);
   return (
-    <label className={`flex items-start gap-2 text-sm ${disabled ? "text-zinc-400" : "text-zinc-700"}`}>
+    <label className={`flex items-start gap-2 text-sm ${disabled ? "text-sub/60" : "text-ink"}`}>
       <input
         type="radio"
         name="chip"
@@ -181,12 +181,12 @@ function ChipRadio({
         checked={chip === value}
         disabled={disabled}
         onChange={() => onSelect(value)}
-        className="mt-0.5 accent-emerald-700"
+        className="mt-0.5 accent-forest"
       />
       <span>
         {label}
         {disabled && status && (
-          <span className="block text-xs text-zinc-400">
+          <span className="block text-xs text-sub/60">
             Already used in gameweek {status.usedInGameweekNumber}
           </span>
         )}

@@ -16,26 +16,26 @@ export default async function AdminPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Admin</h1>
+        <h1 className="font-display text-xl text-ink">Admin</h1>
         <nav className="flex gap-4 text-sm">
-          <Link href="/admin/players" className="text-emerald-700 hover:underline">
+          <Link href="/admin/players" className="text-forest hover:underline">
             Players
           </Link>
-          <Link href="/admin/teams" className="text-emerald-700 hover:underline">
+          <Link href="/admin/teams" className="text-forest hover:underline">
             Teams
           </Link>
-          <Link href="/admin/config" className="text-emerald-700 hover:underline">
+          <Link href="/admin/config" className="text-forest hover:underline">
             Pool settings
           </Link>
         </nav>
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Gameweeks</h2>
+        <h2 className="font-display text-sm text-ink mb-3">Gameweeks</h2>
         <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse mb-4">
           <thead>
-            <tr className="text-left text-zinc-500 border-b border-zinc-200">
+            <tr className="text-left text-sub border-b border-line">
               <th className="py-2 pr-4">GW</th>
               <th className="py-2 pr-4">Deadline</th>
               <th className="py-2 pr-4">Fixtures</th>
@@ -48,18 +48,18 @@ export default async function AdminPage() {
             {gameweeks.map((gw) => {
               const toggleLock = toggleGameweekLockAction.bind(null, gw.id);
               return (
-                <tr key={gw.id} className="border-b border-zinc-100">
+                <tr key={gw.id} className="border-b border-dashed border-line">
                   <td className="py-2 pr-4">{gw.number}</td>
                   <td className="py-2 pr-4">{formatIrishDateTime(gw.deadline)}</td>
                   <td className="py-2 pr-4">{gw._count.fixtures}</td>
                   <td className="py-2 pr-4">{gw._count.picks}</td>
                   <td className="py-2 pr-4">{gw.isLocked ? "Locked" : "Open"}</td>
                   <td className="py-2 pr-4 flex gap-3">
-                    <Link href={`/admin/gameweeks/${gw.id}`} className="text-emerald-700 hover:underline">
+                    <Link href={`/admin/gameweeks/${gw.id}`} className="text-forest hover:underline">
                       Manage
                     </Link>
                     <form action={toggleLock}>
-                      <button type="submit" className="text-zinc-500 hover:underline">
+                      <button type="submit" className="text-sub hover:underline">
                         {gw.isLocked ? "Unlock" : "Lock"}
                       </button>
                     </form>
@@ -69,7 +69,7 @@ export default async function AdminPage() {
             })}
             {gameweeks.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-4 text-zinc-500">
+                <td colSpan={6} className="py-4 text-sub">
                   No gameweeks yet — create the first one below.
                 </td>
               </tr>

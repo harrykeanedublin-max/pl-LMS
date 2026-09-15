@@ -11,7 +11,7 @@ export default function TeamCrest({
     return (
       <span
         aria-hidden
-        className="inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-800 font-semibold shrink-0"
+        className="inline-flex items-center justify-center rounded-full bg-forest/10 text-forest font-semibold shrink-0"
         style={{ width: size, height: size, fontSize: size * 0.5 }}
       >
         {name.charAt(0)}

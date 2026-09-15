@@ -32,17 +32,17 @@ export default async function ManageGameweekPage({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold mb-1">Gameweek {gameweek.number}</h1>
-        <p className="text-zinc-600 text-sm">
+        <h1 className="font-display text-xl text-ink mb-1">Gameweek {gameweek.number}</h1>
+        <p className="text-sub text-sm">
           Deadline: {formatIrishDateTime(gameweek.deadline)} · {gameweek.isLocked ? "Locked" : "Open"}
         </p>
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Fixtures &amp; results</h2>
+        <h2 className="font-display text-sm text-ink mb-3">Fixtures &amp; results</h2>
         <div className="mb-4">
           {gameweek.fixtures.length === 0 && (
-            <p className="text-zinc-500 text-sm mb-2">No fixtures added yet.</p>
+            <p className="text-sub text-sm mb-2">No fixtures added yet.</p>
           )}
           {gameweek.fixtures.map((f) => (
             <FixtureResultForm

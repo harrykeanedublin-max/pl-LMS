@@ -11,7 +11,7 @@ export default function RefreshCrestButton({ teamId }: { teamId: string }) {
 
   return (
     <form action={formAction} className="inline-flex items-center gap-2">
-      <button type="submit" disabled={pending} className="text-zinc-400 hover:text-emerald-700 disabled:opacity-40">
+      <button type="submit" disabled={pending} className="text-sub/60 hover:text-forest disabled:opacity-40">
         {pending ? "Looking…" : "Refresh crest"}
       </button>
       {state.error && <span className="text-xs text-red-600">{state.error}</span>}

@@ -68,18 +68,25 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-10">
       {!player.paid && (
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-md border border-mustard bg-mustard/10 px-4 py-3 text-sm text-forest-dark">
           You&apos;re marked as not yet paid for this pool. Sort your €20 entry with the organiser.
         </div>
       )}
 
       <section>
-        <h1 className="text-2xl font-semibold mb-1">
-          {currentGameweek ? `Gameweek ${currentGameweek.number}` : "No open gameweek"}
-        </h1>
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="font-display text-xl text-ink">
+            {currentGameweek ? "Gameweek" : "No open gameweek"}
+          </h1>
+          {currentGameweek && (
+            <span className="font-display text-xs text-forest border border-forest rounded-full px-2.5 py-1">
+              GW {String(currentGameweek.number).padStart(2, "0")}
+            </span>
+          )}
+        </div>
         {currentGameweek ? (
           <>
-            <p className="text-zinc-600 mb-6">
+            <p className="text-sub mb-6">
               Deadline: {formatIrishDateTime(currentGameweek.deadline)}
             </p>
             <PickForm
@@ -94,7 +101,7 @@ export default async function DashboardPage() {
             />
           </>
         ) : (
-          <p className="text-zinc-600">
+          <p className="text-sub">
             There&apos;s no gameweek currently open for picks. Check back once the organiser opens the
             next one.
           </p>
@@ -102,19 +109,19 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Your picks so far</h2>
+        <h2 className="font-display text-sm text-ink mb-3">Your picks so far</h2>
         {myPicks.length === 0 ? (
-          <p className="text-zinc-500 text-sm">No picks yet.</p>
+          <p className="text-sub text-sm">No picks yet.</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-zinc-500 border-b border-zinc-200">
-                <th className="py-2 pr-4">GW</th>
-                <th className="py-2 pr-4">Team</th>
-                <th className="py-2 pr-4">Chip</th>
-                <th className="py-2 pr-4">Result</th>
-                <th className="py-2 pr-4">Points</th>
+              <tr className="text-left text-sub border-b border-line">
+                <th className="py-2 pr-4 font-medium">GW</th>
+                <th className="py-2 pr-4 font-medium">Team</th>
+                <th className="py-2 pr-4 font-medium">Chip</th>
+                <th className="py-2 pr-4 font-medium">Result</th>
+                <th className="py-2 pr-4 font-medium">Points</th>
               </tr>
             </thead>
             <tbody>
@@ -125,7 +132,7 @@ export default async function DashboardPage() {
                 const points = pointsForPick(result, activeChips);
                 const chip = [...activeChips][0];
                 return (
-                  <tr key={pick.id} className="border-b border-zinc-100">
+                  <tr key={pick.id} className="border-b border-dashed border-line">
                     <td className="py-2 pr-4">{pick.gameweek.number}</td>
                     <td className="py-2 pr-4">
                       <span className="flex items-center gap-2">
@@ -133,11 +140,11 @@ export default async function DashboardPage() {
                         {pick.team.name}
                       </span>
                     </td>
-                    <td className="py-2 pr-4 text-zinc-600">{chip ? CHIP_LABEL[chip] : ""}</td>
-                    <td className="py-2 pr-4">
+                    <td className="py-2 pr-4 text-mustard-dark">{chip ? CHIP_LABEL[chip] : ""}</td>
+                    <td className="py-2 pr-4 text-sub">
                       {result ? result.outcome + ` (${result.goalsFor}-${result.goalsAgainst})` : "Pending"}
                     </td>
-                    <td className="py-2 pr-4">{points === null ? "—" : points}</td>
+                    <td className="py-2 pr-4 font-semibold">{points === null ? "—" : points}</td>
                   </tr>
                 );
               })}

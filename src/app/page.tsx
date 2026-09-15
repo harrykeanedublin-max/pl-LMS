@@ -129,7 +129,7 @@ export default async function DashboardPage() {
                 const fixture = fixtureByGwTeam.get(`${pick.gameweekId}:${pick.teamId}`);
                 const result = fixture ? resultForTeam(fixture, pick.teamId) : null;
                 const activeChips = chipsByGw.get(pick.gameweekId) ?? new Set<ChipType>();
-                const points = pointsForPick(result, activeChips);
+                const points = pointsForPick(result, activeChips, pick.autoAssigned);
                 const chip = [...activeChips][0];
                 return (
                   <tr key={pick.id} className="border-b border-dashed border-line">
@@ -138,6 +138,11 @@ export default async function DashboardPage() {
                       <span className="flex items-center gap-2">
                         <TeamCrest src={pick.team.crestUrl} name={pick.team.name} />
                         {pick.team.name}
+                        {pick.autoAssigned && (
+                          <span className="text-xs text-sub" title="You missed the deadline, so this team was assigned automatically. It scores zero either way.">
+                            (missed deadline)
+                          </span>
+                        )}
                       </span>
                     </td>
                     <td className="py-2 pr-4 text-mustard-dark">{chip ? CHIP_LABEL[chip] : ""}</td>

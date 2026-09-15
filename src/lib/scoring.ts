@@ -33,12 +33,15 @@ export function resultForTeam(fixture: Fixture, teamId: string): TeamFixtureResu
  * - Gamble chip: replaces base scoring with win 6, draw 0, loss -3.
  * - Clean sheet chip: +2 if the picked team conceded no goals, on top of whichever scoring applied.
  * Returns null if the fixture hasn't been played yet (pick is still pending).
+ * A pick the system auto-assigned for a missed deadline always scores 0, win or draw included.
  */
 export function pointsForPick(
   result: TeamFixtureResult | null,
-  activeChips: Set<ChipType>
+  activeChips: Set<ChipType>,
+  isAutoAssigned = false
 ): number | null {
   if (!result) return null;
+  if (isAutoAssigned) return 0;
 
   let points: number;
   if (activeChips.has(ChipType.GAMBLE)) {
@@ -104,7 +107,7 @@ export function computeStandings(params: {
     const activeChips =
       activeChipsByPlayerAndGameweek.get(`${pick.playerId}:${pick.gameweekId}`) ?? new Set();
 
-    const points = pointsForPick(result, activeChips);
+    const points = pointsForPick(result, activeChips, pick.autoAssigned);
     if (points === null) {
       row.pendingPicks += 1;
     } else {

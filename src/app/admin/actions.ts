@@ -6,6 +6,7 @@ import { requireAdmin, hashPasscode } from "@/lib/auth";
 import { fetchCrestUrl } from "@/lib/crests";
 import { irishLocalToUtc } from "@/lib/time";
 import { syncFromFootballData } from "@/lib/sync";
+import { autoAssignMissedPicks } from "@/lib/autoAssign";
 
 export interface ActionState {
   error?: string;
@@ -37,12 +38,15 @@ export async function createGameweekAction(_prev: ActionState, formData: FormDat
  * hours before that gameweek's first kickoff) and syncing fixtures/results
  * for every gameweek with matching data. Only adjusts the deadline of
  * gameweeks it created itself - one the admin made or hand-edited keeps
- * whatever deadline was set for it.
+ * whatever deadline was set for it. Then auto-assigns a pick (alphabetically
+ * first unused team, scores zero) to anyone who missed a deadline that's
+ * already passed.
  */
 export async function syncFixturesAction(_prev: ActionState, _formData: FormData): Promise<ActionState> {
   await requireAdmin();
   try {
     const summary = await syncFromFootballData();
+    const autoAssign = await autoAssignMissedPicks();
     revalidatePath("/admin");
     revalidatePath("/fixtures");
     revalidatePath("/standings");
@@ -56,7 +60,11 @@ export async function syncFixturesAction(_prev: ActionState, _formData: FormData
       `${summary.fixturesCreated} fixture(s) added`,
       `${summary.fixturesUpdated} updated`,
       `${summary.resultsUpdated} result(s) filled in`,
+      `${autoAssign.picksAssigned} missed pick(s) auto-assigned`,
     ];
+    if (autoAssign.playersWithNoTeamsLeft.length > 0) {
+      parts.push(`no teams left for: ${autoAssign.playersWithNoTeamsLeft.join(", ")}`);
+    }
     if (summary.unmatchedTeams.length > 0) {
       parts.push(`couldn't match: ${summary.unmatchedTeams.join(", ")}`);
       return { error: parts.join(". ") + "." };

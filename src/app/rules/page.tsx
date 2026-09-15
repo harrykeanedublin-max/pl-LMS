@@ -17,6 +17,11 @@ export default async function RulesPage() {
           <li>Each gameweek, pick one Premier League team you think will win.</li>
           <li>You can never pick the same team twice across the whole pool.</li>
           <li>Picks lock at the gameweek deadline set by the organiser.</li>
+          <li>
+            Miss a deadline and you&apos;re auto-assigned whichever of your remaining teams comes
+            first alphabetically — it&apos;s used up like any other pick, but scores zero no matter
+            the result.
+          </li>
         </ul>
       </section>
 

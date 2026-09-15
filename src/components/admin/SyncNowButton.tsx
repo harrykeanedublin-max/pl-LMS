@@ -18,8 +18,9 @@ export default function SyncNowButton() {
         {pending ? "Syncing…" : "Sync fixtures & results now"}
       </button>
       <span className="text-xs text-sub">
-        Creates upcoming gameweeks (deadline 2 hours before the first kickoff) and pulls in kickoffs and results
-        from football-data.org. Also runs automatically once a day.
+        Creates upcoming gameweeks (deadline 2 hours before the first kickoff), pulls in kickoffs and results
+        from football-data.org, and auto-assigns a (zero-point) pick to anyone who missed a deadline. Also runs
+        automatically once a day.
       </span>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state.success && <p className="text-sm text-forest">{state.success}</p>}

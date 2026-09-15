@@ -95,6 +95,10 @@ model Pick {
   teamId     String
   team       Team     @relation(fields: [teamId], references: [id])
   createdAt  DateTime @default(now())
+  // True when the player missed the deadline and the system picked for them
+  // (alphabetically-first remaining team). Scores zero no matter the result,
+  // but still counts as used, same as any other pick.
+  autoAssigned Boolean @default(false)
 
   // A player can never pick the same team twice across the whole pool.
   @@unique([playerId, teamId])

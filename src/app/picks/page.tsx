@@ -84,7 +84,7 @@ export default async function PicksPage() {
                     for (const pick of picks) {
                       const fixture = fixtureByTeam.get(pick.teamId);
                       const result = fixture ? resultForTeam(fixture, pick.teamId) : null;
-                      const points = pointsForPick(result, activeChips);
+                      const points = pointsForPick(result, activeChips, pick.autoAssigned);
                       if (points === null) anyPending = true;
                       else total += points;
                     }
@@ -101,6 +101,11 @@ export default async function PicksPage() {
                                 <span key={pick.id} className="flex items-center gap-1.5">
                                   <TeamCrest src={pick.team.crestUrl} name={pick.team.name} size={18} />
                                   {pick.team.name}
+                                  {pick.autoAssigned && (
+                                    <span className="text-xs text-sub" title="Missed the deadline - assigned automatically, scores zero.">
+                                      (missed deadline)
+                                    </span>
+                                  )}
                                 </span>
                               ))}
                             </div>

@@ -77,6 +77,17 @@ export async function addFixtureAction(
   return ok("Fixture added.");
 }
 
+/** Maps every team's name, short code, and aliases (lowercased) to that team. */
+async function buildTeamLookup() {
+  const teams = await prisma.team.findMany();
+  const byKey = new Map(teams.map((t) => [t.name.toLowerCase(), t]));
+  for (const t of teams) {
+    byKey.set(t.shortName.toLowerCase(), t);
+    for (const alias of t.aliases) byKey.set(alias.toLowerCase(), t);
+  }
+  return byKey;
+}
+
 /**
  * Parses lines like "Arsenal vs Chelsea" or "Arsenal vs Chelsea, 20/09/2026 15:00"
  * (team names matched case-insensitively against full name, short code, or any
@@ -100,12 +111,7 @@ export async function addFixturesBulkAction(
 
   if (lines.length === 0) return fail("Paste at least one fixture, one per line.");
 
-  const teams = await prisma.team.findMany();
-  const byKey = new Map(teams.map((t) => [t.name.toLowerCase(), t]));
-  for (const t of teams) {
-    byKey.set(t.shortName.toLowerCase(), t);
-    for (const alias of t.aliases) byKey.set(alias.toLowerCase(), t);
-  }
+  const byKey = await buildTeamLookup();
 
   const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId } });
   const existingByKey = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
@@ -177,6 +183,81 @@ export async function addFixturesBulkAction(
   const summary = `Added ${created} fixture(s), updated kickoff on ${updated}.`;
   if (problems.length > 0) {
     return { error: `${summary} Couldn't add: ${problems.join("; ")}` };
+  }
+  return ok(summary);
+}
+
+/**
+ * Parses lines like "Arsenal 2-0 Chelsea" (final score, home team listed
+ * first - team names matched the same way as bulk fixture entry: full name,
+ * short code, or alias) and marks the matching fixture in this gameweek as
+ * played with those goals. The fixture must already exist for that exact
+ * home/away pairing - this doesn't create new fixtures, only fills in
+ * results for ones already added. Reports lines it couldn't parse, couldn't
+ * match to a team, or that don't correspond to an existing fixture here.
+ */
+export async function updateResultsBulkAction(
+  gameweekId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const raw = String(formData.get("results") ?? "");
+  const lines = raw
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) return fail("Paste at least one result, one per line.");
+
+  const byKey = await buildTeamLookup();
+  const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId } });
+  const existingByKey = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
+
+  let updated = 0;
+  const problems: string[] = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(.+?)\s+(\d+)\s*[-:]\s*(\d+)\s+(.+)$/);
+    if (!match) {
+      problems.push(`"${line}" — couldn't parse (expected "Home 2-0 Away")`);
+      continue;
+    }
+    const [, homeText, homeGoalsRaw, awayGoalsRaw, awayText] = match;
+    const home = byKey.get(homeText.trim().toLowerCase());
+    const away = byKey.get(awayText.trim().toLowerCase());
+    if (!home || !away) {
+      const unknown = [!home ? homeText.trim() : null, !away ? awayText.trim() : null]
+        .filter(Boolean)
+        .join(", ");
+      problems.push(`"${line}" — unrecognised team: ${unknown}`);
+      continue;
+    }
+
+    const fixture = existingByKey.get(`${home.id}:${away.id}`);
+    if (!fixture) {
+      problems.push(`"${line}" — no matching fixture in this gameweek (add the fixture first)`);
+      continue;
+    }
+
+    await prisma.fixture.update({
+      where: { id: fixture.id },
+      data: { homeGoals: Number(homeGoalsRaw), awayGoals: Number(awayGoalsRaw), played: true },
+    });
+    updated += 1;
+  }
+
+  if (updated > 0) {
+    revalidatePath(`/admin/gameweeks/${gameweekId}`);
+    revalidatePath("/fixtures");
+    revalidatePath("/standings");
+    revalidatePath("/picks");
+    revalidatePath("/");
+  }
+
+  const summary = `Updated ${updated} result(s).`;
+  if (problems.length > 0) {
+    return { error: `${summary} Couldn't update: ${problems.join("; ")}` };
   }
   return ok(summary);
 }

@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AddFixtureForm from "@/components/admin/AddFixtureForm";
 import BulkAddFixturesForm from "@/components/admin/BulkAddFixturesForm";
+import BulkResultsForm from "@/components/admin/BulkResultsForm";
 import FixtureResultForm from "@/components/admin/FixtureResultForm";
 import { formatIrishDateTime } from "@/lib/time";
 
@@ -62,6 +63,7 @@ export default async function ManageGameweekPage({
         <div className="flex flex-col gap-3">
           <AddFixtureForm gameweekId={gameweek.id} teams={teams} />
           <BulkAddFixturesForm gameweekId={gameweek.id} />
+          <BulkResultsForm gameweekId={gameweek.id} />
         </div>
       </section>
     </div>

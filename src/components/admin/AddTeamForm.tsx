@@ -18,6 +18,14 @@ export default function AddTeamForm() {
         <span className="font-medium text-ink">Short code</span>
         <input name="shortName" required maxLength={4} className="w-20 rounded-md border border-line px-3 py-2" />
       </label>
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-ink">Aliases (optional)</span>
+        <input
+          name="aliases"
+          placeholder="Spurs, Tottenham"
+          className="w-48 rounded-md border border-line px-3 py-2"
+        />
+      </label>
       <button
         type="submit"
         disabled={pending}

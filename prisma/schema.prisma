@@ -24,6 +24,10 @@ model Team {
   id           String    @id @default(cuid())
   name         String    @unique
   shortName    String    @unique
+  // Common alternate names/nicknames (e.g. "Spurs", "Man City", "Palace") so
+  // bulk-pasted fixtures from wherever match without needing the exact
+  // official name or short code.
+  aliases      String[]  @default([])
   crestUrl     String?
   picks        Pick[]
   homeFixtures Fixture[] @relation("HomeTeam")

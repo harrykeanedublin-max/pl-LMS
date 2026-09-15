@@ -79,10 +79,12 @@ export async function addFixtureAction(
 
 /**
  * Parses lines like "Arsenal vs Chelsea" or "Arsenal vs Chelsea, 20/09/2026 15:00"
- * (team names matched case-insensitively against full name or short code; the date
- * is optional and always Ireland/UK time). Creates fixtures that don't exist yet;
- * for ones that already exist, updates the kickoff if a new one was given. Reports
- * lines it couldn't match rather than failing the whole batch.
+ * (team names matched case-insensitively against full name, short code, or any
+ * saved alias - e.g. "Spurs", "Man City", "Forest" - so text copied from wherever
+ * a fixture list was found tends to just work; the date is optional and always
+ * Ireland/UK time). Creates fixtures that don't exist yet; for ones that already
+ * exist, updates the kickoff if a new one was given. Reports lines it couldn't
+ * match rather than failing the whole batch.
  */
 export async function addFixturesBulkAction(
   gameweekId: string,
@@ -100,7 +102,10 @@ export async function addFixturesBulkAction(
 
   const teams = await prisma.team.findMany();
   const byKey = new Map(teams.map((t) => [t.name.toLowerCase(), t]));
-  for (const t of teams) byKey.set(t.shortName.toLowerCase(), t);
+  for (const t of teams) {
+    byKey.set(t.shortName.toLowerCase(), t);
+    for (const alias of t.aliases) byKey.set(alias.toLowerCase(), t);
+  }
 
   const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId } });
   const existingByKey = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
@@ -241,19 +246,39 @@ export async function resetPlayerPasscodeAction(
   return ok("Passcode reset. Tell them their new passcode.");
 }
 
+function parseAliases(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
+}
+
 export async function addTeamAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const shortName = String(formData.get("shortName") ?? "").trim().toUpperCase();
+  const aliases = parseAliases(String(formData.get("aliases") ?? ""));
   if (!name || !shortName) return fail("Enter both a full name and a short code.");
 
   const existing = await prisma.team.findFirst({ where: { OR: [{ name }, { shortName }] } });
   if (existing) return fail("A team with that name or short code already exists.");
 
   const crestUrl = await fetchCrestUrl(name);
-  await prisma.team.create({ data: { name, shortName, crestUrl } });
+  await prisma.team.create({ data: { name, shortName, aliases, crestUrl } });
   revalidatePath("/admin/teams");
   return ok(crestUrl ? "Team added." : "Team added (couldn't find a crest automatically).");
+}
+
+export async function updateTeamAliasesAction(
+  teamId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+  const aliases = parseAliases(String(formData.get("aliases") ?? ""));
+  await prisma.team.update({ where: { id: teamId }, data: { aliases } });
+  revalidatePath("/admin/teams");
+  return ok("Aliases updated.");
 }
 
 export async function deleteTeamAction(

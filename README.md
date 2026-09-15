@@ -64,10 +64,17 @@ by hand:
   ([src/app/api/cron/sync/route.ts](src/app/api/cron/sync/route.ts),
   configured in [vercel.json](vercel.json)) and can also be triggered any time
   from `/admin` ("Sync fixtures & results now").
-- It only ever updates gameweeks that already exist — matched by gameweek
-  number against football-data.org's matchday number — and never creates a
-  gameweek or changes its deadline. Creating each Gameweek stays a manual,
-  admin-only step.
+- It also creates gameweeks for you — any of gameweek 1 through
+  `PoolConfig.numGameweeks` that don't exist yet, matched against
+  football-data.org's matchday number, with the deadline set 2 hours before
+  that gameweek's first kickoff. It never backfills a gameweek whose deadline
+  would already have passed (e.g. matchdays played before the pool started).
+- If a fixture gets rearranged (TV pick, postponement) before its deadline
+  passes, the sync moves the deadline to match — but only for a gameweek it
+  created itself. The moment you create a gameweek by hand, or edit a
+  deadline yourself from `/admin/gameweeks/[id]`, the sync leaves that
+  gameweek's deadline alone from then on (it still keeps its fixtures/results
+  in sync).
 - Teams are matched by name the first time (using each team's name, short
   code, and aliases from `/admin/teams`), and the match is remembered
   (`Team.externalId`) so later syncs don't need to re-match by name.

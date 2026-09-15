@@ -29,8 +29,13 @@ function resolveTeam(
   return null;
 }
 
+/** Picks stay open until 2 hours before the first match of a gameweek kicks off. */
+const DEADLINE_BUFFER_MS = 2 * 60 * 60 * 1000;
+
 export interface SyncSummary {
   matchdaysChecked: number[];
+  gameweeksCreated: number;
+  deadlinesAdjusted: number;
   fixturesCreated: number;
   fixturesUpdated: number;
   resultsUpdated: number;
@@ -40,15 +45,20 @@ export interface SyncSummary {
 
 /**
  * Syncs fixtures/kickoffs/results from football-data.org into every Gameweek
- * that already exists in our DB (matched by number == football-data matchday).
- * Never creates Gameweeks - the admin controls those. Backfills Team.externalId
+ * whose number has matches for it (matched by number == football-data
+ * matchday), creating gameweeks 1..PoolConfig.numGameweeks that don't exist
+ * yet with their deadline set 2 hours before that gameweek's first kickoff.
+ * Only ever touches the deadline of gameweeks it created itself
+ * (Gameweek.autoManaged) - one the admin created or hand-edited is synced for
+ * fixtures/results but its deadline is left alone. Backfills Team.externalId
  * the first time a team is matched by name so future syncs are id-based.
  */
 export async function syncFromFootballData(): Promise<SyncSummary> {
-  const [gameweeks, teams, allMatches] = await Promise.all([
+  const [gameweeks, teams, allMatches, poolConfig] = await Promise.all([
     prisma.gameweek.findMany(),
     prisma.team.findMany(),
     fetchPLMatches(),
+    prisma.poolConfig.findUnique({ where: { id: "singleton" } }),
   ]);
 
   const gameweekByNumber = new Map(gameweeks.map((gw) => [gw.number, gw]));
@@ -63,6 +73,8 @@ export async function syncFromFootballData(): Promise<SyncSummary> {
 
   const summary: SyncSummary = {
     matchdaysChecked: [],
+    gameweeksCreated: 0,
+    deadlinesAdjusted: 0,
     fixturesCreated: 0,
     fixturesUpdated: 0,
     resultsUpdated: 0,
@@ -77,10 +89,38 @@ export async function syncFromFootballData(): Promise<SyncSummary> {
     else matchesByMatchday.set(match.matchday, [match]);
   }
 
+  const firstKickoff = (matches: FDMatch[]) =>
+    new Date(Math.min(...matches.map((m) => new Date(m.utcDate).getTime())));
+
+  const numGameweeks = poolConfig?.numGameweeks ?? 0;
+  for (let number = 1; number <= numGameweeks; number += 1) {
+    if (gameweekByNumber.has(number)) continue;
+    const matches = matchesByMatchday.get(number);
+    if (!matches || matches.length === 0) continue;
+
+    const deadline = new Date(firstKickoff(matches).getTime() - DEADLINE_BUFFER_MS);
+    // Never auto-create a gameweek whose deadline has already passed (e.g.
+    // matchdays played before this pool/this feature started) - it'd be dead
+    // on arrival, nobody could ever pick for it.
+    if (deadline.getTime() <= Date.now()) continue;
+    const created = await prisma.gameweek.create({ data: { number, deadline, autoManaged: true } });
+    gameweekByNumber.set(number, created);
+    summary.gameweeksCreated += 1;
+  }
+
   for (const [matchday, gameweek] of gameweekByNumber) {
     const matches = matchesByMatchday.get(matchday);
     if (!matches || matches.length === 0) continue;
     summary.matchdaysChecked.push(matchday);
+
+    if (gameweek.autoManaged && !gameweek.isLocked && gameweek.deadline.getTime() > Date.now()) {
+      const deadline = new Date(firstKickoff(matches).getTime() - DEADLINE_BUFFER_MS);
+      if (deadline.getTime() !== gameweek.deadline.getTime()) {
+        await prisma.gameweek.update({ where: { id: gameweek.id }, data: { deadline } });
+        gameweek.deadline = deadline;
+        summary.deadlinesAdjusted += 1;
+      }
+    }
 
     const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId: gameweek.id } });
     const existingByTeamPair = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));

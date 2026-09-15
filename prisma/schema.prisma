@@ -42,6 +42,11 @@ model Gameweek {
   number     Int         @unique
   deadline   DateTime
   isLocked   Boolean     @default(false)
+  // True for gameweeks the sync job created and still owns the deadline for
+  // (kept at 2h before first kickoff, auto-adjusted if that shifts). Manually
+  // creating a gameweek, or editing its deadline by hand, leaves this false so
+  // the sync never overwrites an admin's own choice.
+  autoManaged Boolean     @default(false)
   fixtures   Fixture[]
   picks      Pick[]
   chipUsages ChipUsage[]

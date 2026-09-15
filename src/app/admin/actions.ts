@@ -32,9 +32,12 @@ export async function createGameweekAction(_prev: ActionState, formData: FormDat
 }
 
 /**
- * Pulls fixtures/kickoffs/results from football-data.org for every gameweek
- * that already exists here (matched by number == their matchday). Never
- * creates gameweeks - only the admin does that, via createGameweekAction.
+ * Pulls fixtures/kickoffs/results from football-data.org, creating any of
+ * gameweeks 1..PoolConfig.numGameweeks that don't exist yet (deadline set 2
+ * hours before that gameweek's first kickoff) and syncing fixtures/results
+ * for every gameweek with matching data. Only adjusts the deadline of
+ * gameweeks it created itself - one the admin made or hand-edited keeps
+ * whatever deadline was set for it.
  */
 export async function syncFixturesAction(_prev: ActionState, _formData: FormData): Promise<ActionState> {
   await requireAdmin();
@@ -48,6 +51,8 @@ export async function syncFixturesAction(_prev: ActionState, _formData: FormData
 
     const parts = [
       `Checked matchday(s) ${summary.matchdaysChecked.join(", ") || "none"}`,
+      `${summary.gameweeksCreated} gameweek(s) created`,
+      `${summary.deadlinesAdjusted} deadline(s) adjusted`,
       `${summary.fixturesCreated} fixture(s) added`,
       `${summary.fixturesUpdated} updated`,
       `${summary.resultsUpdated} result(s) filled in`,
@@ -80,7 +85,8 @@ export async function updateGameweekDeadlineAction(
   const deadlineRaw = String(formData.get("deadline") ?? "");
   const deadline = irishLocalToUtc(deadlineRaw);
   if (!deadline) return fail("Enter a valid deadline.");
-  await prisma.gameweek.update({ where: { id: gameweekId }, data: { deadline } });
+  // A manual edit means the sync job should stop auto-adjusting this one.
+  await prisma.gameweek.update({ where: { id: gameweekId }, data: { deadline, autoManaged: false } });
   revalidatePath("/admin");
   revalidatePath("/");
   return ok("Deadline updated.");

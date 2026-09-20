@@ -102,8 +102,11 @@ export default async function PicksPage() {
                                   <TeamCrest src={pick.team.crestUrl} name={pick.team.name} size={18} />
                                   {pick.team.name}
                                   {pick.autoAssigned && (
-                                    <span className="text-xs text-sub" title="Missed the deadline - assigned automatically, scores zero.">
-                                      (missed deadline)
+                                    <span
+                                      className="inline-flex items-center rounded-full bg-mustard/15 text-mustard-dark text-[11px] font-medium px-2 py-0.5"
+                                      title="Missed the deadline - assigned automatically, scores zero."
+                                    >
+                                      Missed deadline
                                     </span>
                                   )}
                                 </span>

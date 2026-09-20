@@ -195,8 +195,11 @@ export default async function DashboardPage() {
                         <TeamCrest src={pick.team.crestUrl} name={pick.team.name} />
                         {pick.team.name}
                         {pick.autoAssigned && (
-                          <span className="text-xs text-sub" title="You missed the deadline, so this team was assigned automatically. It scores zero either way.">
-                            (missed deadline)
+                          <span
+                            className="inline-flex items-center rounded-full bg-mustard/15 text-mustard-dark text-[11px] font-medium px-2 py-0.5"
+                            title="You missed the deadline, so this team was assigned automatically. It scores zero either way."
+                          >
+                            Missed deadline
                           </span>
                         )}
                       </span>

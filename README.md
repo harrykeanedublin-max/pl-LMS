@@ -81,6 +81,27 @@ by hand:
 - The free football-data.org plan is rate-limited (10 requests/minute) and
   covers this comfortably at once a day.
 
+## Backing up the database
+
+Neon's free plan only keeps 6 hours of point-in-time restore history, so
+there's a manual backup/restore pair for anything longer:
+
+```bash
+npm run db:backup
+```
+
+Dumps every table to a timestamped JSON file under `backups/` (gitignored -
+it contains player passcode hashes, never commit it). Worth running before
+any risky manual change to the production database.
+
+```bash
+npm run db:restore -- backups/backup-2026-09-20T12-00-00-000Z.json
+```
+
+Shows what it would restore without changing anything. Add `--confirm` to
+actually run it - this **replaces every row in every table**, so only do
+that if you're sure.
+
 ## Notes
 
 - The seeded team list ([prisma/seed.ts](prisma/seed.ts)) reflects one Premier League

@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# manual database backups (contains player passcode hashes - never commit)
+/backups
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

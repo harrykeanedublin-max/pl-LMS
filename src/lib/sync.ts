@@ -52,13 +52,23 @@ export interface SyncSummary {
  * (Gameweek.autoManaged) - one the admin created or hand-edited is synced for
  * fixtures/results but its deadline is left alone. Backfills Team.externalId
  * the first time a team is matched by name so future syncs are id-based.
+ *
+ * Existing fixtures are matched by team pair *across the whole season*, not
+ * scoped to one gameweek - in a standard PL double round-robin, "home team
+ * vs away team" only happens once a season, so that pairing is already a
+ * stable identity. If football-data.org later reassigns a postponed match to
+ * a different matchday, this still finds the fixture we already created (in
+ * whichever gameweek a pick may already reference) and updates it in place,
+ * rather than losing track of it there and creating an orphaned duplicate
+ * under the new matchday.
  */
 export async function syncFromFootballData(): Promise<SyncSummary> {
-  const [gameweeks, teams, allMatches, poolConfig] = await Promise.all([
+  const [gameweeks, teams, allMatches, poolConfig, allFixtures] = await Promise.all([
     prisma.gameweek.findMany(),
     prisma.team.findMany(),
     fetchPLMatches(),
     prisma.poolConfig.findUnique({ where: { id: "singleton" } }),
+    prisma.fixture.findMany(),
   ]);
 
   const gameweekByNumber = new Map(gameweeks.map((gw) => [gw.number, gw]));
@@ -108,6 +118,9 @@ export async function syncFromFootballData(): Promise<SyncSummary> {
     summary.gameweeksCreated += 1;
   }
 
+  // Pass 1: nudge deadlines for gameweeks we manage, using each gameweek's
+  // *current* matchday match list (unaffected by any reassignment handled
+  // below - the gameweek a pick was made for never changes).
   for (const [matchday, gameweek] of gameweekByNumber) {
     const matches = matchesByMatchday.get(matchday);
     if (!matches || matches.length === 0) continue;
@@ -121,59 +134,68 @@ export async function syncFromFootballData(): Promise<SyncSummary> {
         summary.deadlinesAdjusted += 1;
       }
     }
+  }
 
-    const existingFixtures = await prisma.fixture.findMany({ where: { gameweekId: gameweek.id } });
-    const existingByTeamPair = new Map(existingFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
+  // Pass 2: sync every fixture in the season in one flat pass, identifying
+  // each by team pair rather than by (gameweek, team pair) - see the
+  // function doc comment for why that's the stable identity to use.
+  const fixtureByTeamPair = new Map(allFixtures.map((f) => [`${f.homeTeamId}:${f.awayTeamId}`, f]));
 
-    for (const match of matches) {
-      const home = resolveTeam(match.homeTeam, teamsByExternalId, teamsByNormalizedName);
-      const away = resolveTeam(match.awayTeam, teamsByExternalId, teamsByNormalizedName);
+  for (const match of allMatches) {
+    const gameweek = gameweekByNumber.get(match.matchday);
 
-      if (!home) summary.unmatchedTeams.push(match.homeTeam.name);
-      if (!away) summary.unmatchedTeams.push(match.awayTeam.name);
-      if (!home || !away) continue;
+    const home = resolveTeam(match.homeTeam, teamsByExternalId, teamsByNormalizedName);
+    const away = resolveTeam(match.awayTeam, teamsByExternalId, teamsByNormalizedName);
 
-      if (home.externalId !== match.homeTeam.id) {
-        await prisma.team.update({ where: { id: home.id }, data: { externalId: match.homeTeam.id } });
-        home.externalId = match.homeTeam.id;
-        teamsByExternalId.set(match.homeTeam.id, home);
-        summary.teamsLinked += 1;
-      }
-      if (away.externalId !== match.awayTeam.id) {
-        await prisma.team.update({ where: { id: away.id }, data: { externalId: match.awayTeam.id } });
-        away.externalId = match.awayTeam.id;
-        teamsByExternalId.set(match.awayTeam.id, away);
-        summary.teamsLinked += 1;
-      }
+    if (!home) summary.unmatchedTeams.push(match.homeTeam.name);
+    if (!away) summary.unmatchedTeams.push(match.awayTeam.name);
+    if (!home || !away) continue;
 
-      const kickoff = new Date(match.utcDate);
-      const played = match.status === "FINISHED";
-      const homeGoals = played ? match.score.fullTime.home : null;
-      const awayGoals = played ? match.score.fullTime.away : null;
+    if (home.externalId !== match.homeTeam.id) {
+      await prisma.team.update({ where: { id: home.id }, data: { externalId: match.homeTeam.id } });
+      home.externalId = match.homeTeam.id;
+      teamsByExternalId.set(match.homeTeam.id, home);
+      summary.teamsLinked += 1;
+    }
+    if (away.externalId !== match.awayTeam.id) {
+      await prisma.team.update({ where: { id: away.id }, data: { externalId: match.awayTeam.id } });
+      away.externalId = match.awayTeam.id;
+      teamsByExternalId.set(match.awayTeam.id, away);
+      summary.teamsLinked += 1;
+    }
 
-      const key = `${home.id}:${away.id}`;
-      const existing = existingByTeamPair.get(key);
-      if (existing) {
-        const needsUpdate =
-          existing.kickoff?.getTime() !== kickoff.getTime() ||
-          existing.played !== played ||
-          existing.homeGoals !== homeGoals ||
-          existing.awayGoals !== awayGoals;
-        if (needsUpdate) {
-          await prisma.fixture.update({
-            where: { id: existing.id },
-            data: { kickoff, played, homeGoals, awayGoals },
-          });
-          if (played && !existing.played) summary.resultsUpdated += 1;
-          else summary.fixturesUpdated += 1;
-        }
-      } else {
-        const created = await prisma.fixture.create({
-          data: { gameweekId: gameweek.id, homeTeamId: home.id, awayTeamId: away.id, kickoff, played, homeGoals, awayGoals },
+    const kickoff = new Date(match.utcDate);
+    const played = match.status === "FINISHED";
+    const homeGoals = played ? match.score.fullTime.home : null;
+    const awayGoals = played ? match.score.fullTime.away : null;
+
+    const key = `${home.id}:${away.id}`;
+    const existing = fixtureByTeamPair.get(key);
+    if (existing) {
+      // Update in place, in whichever gameweek it already belongs to - even
+      // if match.matchday now points somewhere else, a pick already made
+      // against this fixture's gameweek must stay resolvable.
+      const needsUpdate =
+        existing.kickoff?.getTime() !== kickoff.getTime() ||
+        existing.played !== played ||
+        existing.homeGoals !== homeGoals ||
+        existing.awayGoals !== awayGoals;
+      if (needsUpdate) {
+        await prisma.fixture.update({
+          where: { id: existing.id },
+          data: { kickoff, played, homeGoals, awayGoals },
         });
-        existingByTeamPair.set(key, created);
-        summary.fixturesCreated += 1;
+        if (played && !existing.played) summary.resultsUpdated += 1;
+        else summary.fixturesUpdated += 1;
       }
+    } else if (gameweek) {
+      // Brand new fixture - only create it if we have a gameweek matching
+      // its *current* matchday to attach it to.
+      const created = await prisma.fixture.create({
+        data: { gameweekId: gameweek.id, homeTeamId: home.id, awayTeamId: away.id, kickoff, played, homeGoals, awayGoals },
+      });
+      fixtureByTeamPair.set(key, created);
+      summary.fixturesCreated += 1;
     }
   }
 

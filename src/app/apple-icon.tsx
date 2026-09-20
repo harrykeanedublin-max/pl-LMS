@@ -44,8 +44,8 @@ export default function AppleIcon() {
           <div
             style={{
               position: "absolute",
-              top: 72,
-              left: 24,
+              top: 67,
+              left: 25,
               width: 30,
               height: 30,
               background: "#1c231d",
@@ -56,8 +56,8 @@ export default function AppleIcon() {
           <div
             style={{
               position: "absolute",
-              top: 72,
-              left: 78,
+              top: 67,
+              left: 77,
               width: 30,
               height: 30,
               background: "#1c231d",

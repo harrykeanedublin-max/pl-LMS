@@ -1,4 +1,4 @@
-import { ChipType } from "@prisma/client";
+import { ChipType, type Fixture, type Team } from "@prisma/client";
 import { requirePlayer } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import PickForm, { type ChipStatus } from "@/components/PickForm";
@@ -6,11 +6,44 @@ import TeamCrest from "@/components/TeamCrest";
 import { CHIP_LABEL, pointsForPick, resultForTeam } from "@/lib/scoring";
 import { formatIrishDateTime, formatIrishKickoff } from "@/lib/time";
 
+function FixtureList({ fixtures }: { fixtures: (Fixture & { homeTeam: Team; awayTeam: Team })[] }) {
+  if (fixtures.length === 0) {
+    return <p className="text-sub text-sm">No fixtures added yet.</p>;
+  }
+  return (
+    <ul className="flex flex-col divide-y divide-dashed divide-line border-y border-dashed border-line">
+      {fixtures.map((f) => (
+        <li
+          key={f.id}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 py-2 text-sm"
+        >
+          <span className="flex items-center gap-2 flex-wrap">
+            <TeamCrest src={f.homeTeam.crestUrl} name={f.homeTeam.name} />
+            <span>{f.homeTeam.name}</span>
+            <span className="text-sub/60">vs</span>
+            <span>{f.awayTeam.name}</span>
+            <TeamCrest src={f.awayTeam.crestUrl} name={f.awayTeam.name} />
+          </span>
+          <span className="text-sub whitespace-nowrap">
+            {f.played ? (
+              <span className="font-medium text-ink">
+                {f.homeGoals}–{f.awayGoals}
+              </span>
+            ) : (
+              formatIrishKickoff(f.kickoff)
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default async function DashboardPage() {
   const player = await requirePlayer();
   const now = new Date();
 
-  const [currentGameweek, allTeams, myPicks, myChipUsages, gameweeksWithFixtures] = await Promise.all([
+  const [currentGameweek, allTeams, myPicks, myChipUsages, revealedGameweeks] = await Promise.all([
     prisma.gameweek.findFirst({
       where: { isLocked: false, deadline: { gt: now } },
       orderBy: { number: "asc" },
@@ -25,8 +58,14 @@ export default async function DashboardPage() {
       where: { playerId: player.id },
       include: { gameweek: true },
     }),
+    // The two most recently revealed gameweeks (deadline passed, or locked) -
+    // same rule /picks and /teams use. The most recent is "coming up" (its
+    // deadline just passed, matches are about to be or are being played);
+    // the one before it is "previous week", fully resolved by now.
     prisma.gameweek.findMany({
-      orderBy: { number: "asc" },
+      where: { OR: [{ isLocked: true }, { deadline: { lte: now } }] },
+      orderBy: { number: "desc" },
+      take: 2,
       include: {
         fixtures: {
           include: { homeTeam: true, awayTeam: true },
@@ -35,20 +74,7 @@ export default async function DashboardPage() {
       },
     }),
   ]);
-
-  // "This week" tracks whichever gameweek is actually kicking off, not
-  // whichever is still open for picks - once a deadline passes but the
-  // matches haven't been played yet, this is what shows the live scores.
-  const firstKickoffTime = (gw: (typeof gameweeksWithFixtures)[number]) => {
-    const times = gw.fixtures.map((f) => f.kickoff?.getTime()).filter((t): t is number => t !== undefined && t !== null);
-    return times.length ? Math.min(...times) : null;
-  };
-  const started = gameweeksWithFixtures.filter((gw) => {
-    const fk = firstKickoffTime(gw);
-    return fk !== null && fk <= now.getTime();
-  });
-  const thisWeekGameweek =
-    started[started.length - 1] ?? gameweeksWithFixtures.find((gw) => firstKickoffTime(gw) !== null) ?? null;
+  const [comingUpGameweek, previousGameweek] = revealedGameweeks;
 
   const usedTeamIdsElsewhere = new Set(
     myPicks.filter((p) => p.gameweekId !== currentGameweek?.id).map((p) => p.teamId)
@@ -131,36 +157,21 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      {thisWeekGameweek && (
+      {comingUpGameweek && (
         <section>
           <h2 className="font-display text-sm text-ink mb-3">
-            Gameweek {thisWeekGameweek.number} fixtures
+            Coming up: Gameweek {comingUpGameweek.number}
           </h2>
-          <ul className="flex flex-col divide-y divide-dashed divide-line border-y border-dashed border-line">
-            {thisWeekGameweek.fixtures.map((f) => (
-              <li
-                key={f.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 py-2 text-sm"
-              >
-                <span className="flex items-center gap-2 flex-wrap">
-                  <TeamCrest src={f.homeTeam.crestUrl} name={f.homeTeam.name} />
-                  <span>{f.homeTeam.name}</span>
-                  <span className="text-sub/60">vs</span>
-                  <span>{f.awayTeam.name}</span>
-                  <TeamCrest src={f.awayTeam.crestUrl} name={f.awayTeam.name} />
-                </span>
-                <span className="text-sub whitespace-nowrap">
-                  {f.played ? (
-                    <span className="font-medium text-ink">
-                      {f.homeGoals}–{f.awayGoals}
-                    </span>
-                  ) : (
-                    formatIrishKickoff(f.kickoff)
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <FixtureList fixtures={comingUpGameweek.fixtures} />
+        </section>
+      )}
+
+      {previousGameweek && (
+        <section>
+          <h2 className="font-display text-sm text-ink mb-3">
+            Previous week: Gameweek {previousGameweek.number} results
+          </h2>
+          <FixtureList fixtures={previousGameweek.fixtures} />
         </section>
       )}
 

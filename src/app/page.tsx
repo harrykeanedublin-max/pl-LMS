@@ -43,10 +43,16 @@ export default async function DashboardPage() {
   const player = await requirePlayer();
   const now = new Date();
 
-  const [currentGameweek, allTeams, myPicks, myChipUsages, revealedGameweeks] = await Promise.all([
+  const [currentGameweek, allTeams, myPicks, myChipUsages, previousGameweek] = await Promise.all([
+    // "Coming up": whichever gameweek is currently open for picks - its
+    // fixture schedule isn't sensitive (it's already public on /fixtures),
+    // only picks are, so this doesn't need the reveal gating below.
     prisma.gameweek.findFirst({
       where: { isLocked: false, deadline: { gt: now } },
       orderBy: { number: "asc" },
+      include: {
+        fixtures: { include: { homeTeam: true, awayTeam: true }, orderBy: [{ kickoff: "asc" }, { id: "asc" }] },
+      },
     }),
     prisma.team.findMany({ orderBy: { name: "asc" } }),
     prisma.pick.findMany({
@@ -58,23 +64,17 @@ export default async function DashboardPage() {
       where: { playerId: player.id },
       include: { gameweek: true },
     }),
-    // The two most recently revealed gameweeks (deadline passed, or locked) -
-    // same rule /picks and /teams use. The most recent is "coming up" (its
-    // deadline just passed, matches are about to be or are being played);
-    // the one before it is "previous week", fully resolved by now.
-    prisma.gameweek.findMany({
+    // "Previous week": the most recently revealed gameweek (deadline passed,
+    // or locked) - same rule /picks and /teams use for picks/chips - fully
+    // resolved (or close to it) by now.
+    prisma.gameweek.findFirst({
       where: { OR: [{ isLocked: true }, { deadline: { lte: now } }] },
       orderBy: { number: "desc" },
-      take: 2,
       include: {
-        fixtures: {
-          include: { homeTeam: true, awayTeam: true },
-          orderBy: [{ kickoff: "asc" }, { id: "asc" }],
-        },
+        fixtures: { include: { homeTeam: true, awayTeam: true }, orderBy: [{ kickoff: "asc" }, { id: "asc" }] },
       },
     }),
   ]);
-  const [comingUpGameweek, previousGameweek] = revealedGameweeks;
 
   const usedTeamIdsElsewhere = new Set(
     myPicks.filter((p) => p.gameweekId !== currentGameweek?.id).map((p) => p.teamId)
@@ -157,12 +157,12 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      {comingUpGameweek && (
+      {currentGameweek && (
         <section>
           <h2 className="font-display text-sm text-ink mb-3">
-            Coming up: Gameweek {comingUpGameweek.number}
+            Coming up: Gameweek {currentGameweek.number}
           </h2>
-          <FixtureList fixtures={comingUpGameweek.fixtures} />
+          <FixtureList fixtures={currentGameweek.fixtures} />
         </section>
       )}
 

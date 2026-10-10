@@ -66,7 +66,7 @@ by hand:
   from `/admin` ("Sync fixtures & results now").
 - It also creates gameweeks for you — any of gameweek 1 through
   `PoolConfig.numGameweeks` that don't exist yet, matched against
-  football-data.org's matchday number, with the deadline set 2 hours before
+  football-data.org's matchday number, with the deadline set 30 minutes before
   that gameweek's first kickoff. It never backfills a gameweek whose deadline
   would already have passed (e.g. matchdays played before the pool started).
 - If a fixture gets rearranged (TV pick, postponement) before its deadline

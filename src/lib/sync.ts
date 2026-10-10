@@ -29,8 +29,8 @@ function resolveTeam(
   return null;
 }
 
-/** Picks stay open until 2 hours before the first match of a gameweek kicks off. */
-const DEADLINE_BUFFER_MS = 2 * 60 * 60 * 1000;
+/** Picks stay open until 30 minutes before the first match of a gameweek kicks off. */
+const DEADLINE_BUFFER_MS = 30 * 60 * 1000;
 
 export interface SyncSummary {
   matchdaysChecked: number[];
@@ -47,7 +47,7 @@ export interface SyncSummary {
  * Syncs fixtures/kickoffs/results from football-data.org into every Gameweek
  * whose number has matches for it (matched by number == football-data
  * matchday), creating gameweeks 1..PoolConfig.numGameweeks that don't exist
- * yet with their deadline set 2 hours before that gameweek's first kickoff.
+ * yet with their deadline set 30 minutes before that gameweek's first kickoff.
  * Only ever touches the deadline of gameweeks it created itself
  * (Gameweek.autoManaged) - one the admin created or hand-edited is synced for
  * fixtures/results but its deadline is left alone. Backfills Team.externalId

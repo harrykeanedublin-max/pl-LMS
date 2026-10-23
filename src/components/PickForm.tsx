@@ -60,7 +60,7 @@ export default function PickForm({
   const team2 = availableTeams.find((t) => t.id === team2Id);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="flex touch-manipulation flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-ink">{doubleUpChecked ? "Team 1" : "Your pick"}</span>
@@ -71,7 +71,7 @@ export default function PickForm({
               value={team1Id}
               onChange={(e) => setTeam1Id(e.target.value)}
               required
-              className="flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
+              className="min-h-12 flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
             >
               <option value="" disabled>
                 Choose a team…
@@ -95,7 +95,7 @@ export default function PickForm({
                 value={team2Id}
                 onChange={(e) => setTeam2Id(e.target.value)}
                 required
-                className="flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
+                className="min-h-12 flex-1 rounded-md border border-line bg-cream/50 px-3 py-2 text-base"
               >
                 <option value="" disabled>
                   Choose a team…
@@ -118,7 +118,7 @@ export default function PickForm({
             what do they do?
           </Link>
         </legend>
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <ChipRadio value="" label="No chip" chip={chip} onSelect={setChip} />
           <ChipRadio
             value={ChipType.DOUBLE_UP}
@@ -150,7 +150,7 @@ export default function PickForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-forest text-cream px-4 py-2 text-sm font-medium hover:bg-forest-dark disabled:opacity-50"
+        className="min-h-12 self-start rounded-md bg-forest text-cream px-6 py-2 text-sm font-medium hover:bg-forest-dark disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save pick"}
       </button>
@@ -173,7 +173,15 @@ function ChipRadio({
 }) {
   const disabled = Boolean(status && status.usedInGameweekNumber !== null);
   return (
-    <label className={`flex items-start gap-2 text-sm ${disabled ? "text-sub/60" : "text-ink"}`}>
+    <label
+      className={`flex min-h-12 touch-manipulation items-center gap-3 rounded-md border px-3 py-2 text-sm ${
+        disabled
+          ? "border-line text-sub/60"
+          : chip === value
+            ? "border-forest bg-forest/10 text-ink"
+            : "border-line bg-cream/50 text-ink"
+      }`}
+    >
       <input
         type="radio"
         name="chip"
@@ -181,7 +189,7 @@ function ChipRadio({
         checked={chip === value}
         disabled={disabled}
         onChange={() => onSelect(value)}
-        className="mt-0.5 accent-forest"
+        className="h-5 w-5 shrink-0 accent-forest"
       />
       <span>
         {label}

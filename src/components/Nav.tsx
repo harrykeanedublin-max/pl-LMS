@@ -19,6 +19,7 @@ export default async function Nav() {
         { href: "/picks", label: "Picks" },
         { href: "/teams", label: "Teams" },
         { href: "/standings", label: "Standings" },
+        { href: "/table", label: "PL Table" },
         { href: "/rules", label: "Rules" },
         ...(session.isAdmin ? [{ href: "/admin", label: "Admin", admin: true }] : []),
       ]

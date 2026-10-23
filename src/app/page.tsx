@@ -6,10 +6,21 @@ import TeamCrest from "@/components/TeamCrest";
 import { CHIP_LABEL, pointsForPick, resultForTeam } from "@/lib/scoring";
 import { formatIrishDateTime, formatIrishKickoff } from "@/lib/time";
 
-function FixtureList({ fixtures }: { fixtures: (Fixture & { homeTeam: Team; awayTeam: Team })[] }) {
+function FixtureList({
+  fixtures,
+  usedTeamIds,
+}: {
+  fixtures: (Fixture & { homeTeam: Team; awayTeam: Team })[];
+  usedTeamIds?: Set<string>;
+}) {
   if (fixtures.length === 0) {
     return <p className="text-sub text-sm">No fixtures added yet.</p>;
   }
+  // Teams the player has already used in an earlier gameweek are greyed and
+  // struck through so they can see at a glance who's still available.
+  const nameClass = (teamId: string) =>
+    usedTeamIds?.has(teamId) ? "text-sub/60 line-through" : "";
+  const crestClass = (teamId: string) => (usedTeamIds?.has(teamId) ? "opacity-40" : "");
   return (
     <ul className="flex flex-col divide-y divide-dashed divide-line border-y border-dashed border-line">
       {fixtures.map((f) => (
@@ -18,11 +29,15 @@ function FixtureList({ fixtures }: { fixtures: (Fixture & { homeTeam: Team; away
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 py-2 text-sm"
         >
           <span className="flex items-center gap-2 flex-wrap">
-            <TeamCrest src={f.homeTeam.crestUrl} name={f.homeTeam.name} />
-            <span>{f.homeTeam.name}</span>
+            <span className={crestClass(f.homeTeamId)}>
+              <TeamCrest src={f.homeTeam.crestUrl} name={f.homeTeam.name} />
+            </span>
+            <span className={nameClass(f.homeTeamId)}>{f.homeTeam.name}</span>
             <span className="text-sub/60">vs</span>
-            <span>{f.awayTeam.name}</span>
-            <TeamCrest src={f.awayTeam.crestUrl} name={f.awayTeam.name} />
+            <span className={nameClass(f.awayTeamId)}>{f.awayTeam.name}</span>
+            <span className={crestClass(f.awayTeamId)}>
+              <TeamCrest src={f.awayTeam.crestUrl} name={f.awayTeam.name} />
+            </span>
           </span>
           <span className="text-sub whitespace-nowrap">
             {f.played ? (
@@ -159,10 +174,15 @@ export default async function DashboardPage() {
 
       {currentGameweek && (
         <section>
-          <h2 className="font-display text-sm text-ink mb-3">
+          <h2
+            className={`font-display text-sm text-ink ${usedTeamIdsElsewhere.size > 0 ? "mb-1" : "mb-3"}`}
+          >
             Coming up: Gameweek {currentGameweek.number}
           </h2>
-          <FixtureList fixtures={currentGameweek.fixtures} />
+          {usedTeamIdsElsewhere.size > 0 && (
+            <p className="text-xs text-sub mb-3">Teams you&apos;ve already used are crossed out.</p>
+          )}
+          <FixtureList fixtures={currentGameweek.fixtures} usedTeamIds={usedTeamIdsElsewhere} />
         </section>
       )}
 

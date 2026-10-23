@@ -10,13 +10,19 @@ export interface FormState {
 }
 
 export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const name = String(formData.get("name") ?? "").trim();
+  const clean = (value: FormDataEntryValue | null) => String(value ?? "").trim().replace(/\s+/g, " ");
+  const firstName = clean(formData.get("firstName"));
+  const lastName = clean(formData.get("lastName"));
   const passcode = String(formData.get("passcode") ?? "");
   const confirmPasscode = String(formData.get("confirmPasscode") ?? "");
   const adminCode = String(formData.get("adminCode") ?? "");
 
-  if (name.length < 2 || name.length > 40) {
-    return { error: "Name must be between 2 and 40 characters." };
+  if (!firstName || !lastName) {
+    return { error: "Enter both your first and last name." };
+  }
+  const name = `${firstName} ${lastName}`;
+  if (name.length > 40) {
+    return { error: "Your full name must be 40 characters or fewer." };
   }
   if (passcode.length < 4) {
     return { error: "Passcode must be at least 4 characters." };

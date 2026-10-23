@@ -39,7 +39,12 @@ export default function LoginForm() {
 
       {mode === "login" ? (
         <form action={loginFormAction} className="flex flex-col gap-4">
-          <Field label="Name" name="name" autoComplete="username" />
+          <Field
+            label="Name"
+            name="name"
+            autoComplete="username"
+            hint="Your name exactly as you signed up."
+          />
           <Field label="Passcode" name="passcode" type="password" autoComplete="current-password" />
           {loginState.error && <p className="text-sm text-red-600">{loginState.error}</p>}
           <button
@@ -52,7 +57,8 @@ export default function LoginForm() {
         </form>
       ) : (
         <form action={registerFormAction} className="flex flex-col gap-4">
-          <Field label="Your name" name="name" autoComplete="username" />
+          <Field label="First name" name="firstName" autoComplete="given-name" />
+          <Field label="Last name" name="lastName" autoComplete="family-name" />
           <Field label="Choose a passcode" name="passcode" type="password" autoComplete="new-password" />
           <Field
             label="Confirm passcode"
